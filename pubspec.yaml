@@ -14,7 +14,7 @@ dependencies:
   ai_nexconn_chat_plugin: ^26.2.7
   flutter_localizations:
     sdk: flutter
-  intl: any
+  intl: ^0.20.2
   provider: ^6.1.2
   cached_network_image: ^3.4.1
   flutter_slidable: ^4.0.0
