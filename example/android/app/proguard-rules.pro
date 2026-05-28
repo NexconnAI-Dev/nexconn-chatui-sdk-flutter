@@ -1,0 +1,1 @@
+-dontwarn javax.xml.stream.XMLStreamException

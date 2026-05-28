@@ -1,0 +1,575 @@
+{
+  "@@locale": "zh",
+  "channelAppBarTitle": "聊天",
+  "channelLongPressCancel": "取消",
+  "channelListEmpty": "暂无聊天",
+  "channelActionPin": "置顶",
+  "channelActionUnpin": "取消置顶",
+  "channelActionMute": "免打扰",
+  "channelActionUnmute": "取消免打扰",
+  "channelActionDelete": "删除",
+  "channelActionFailed": "操作失败，请重试。",
+  "channelSearchPlaceholder": "搜索聊天",
+  "channelNetworkUnavailable": "网络不可用，聊天列表可能不是最新。",
+  "channelGroupTitle": "群组 {channelId}",
+  "@channelGroupTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelOpenTitle": "开放频道 {channelId}",
+  "@channelOpenTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelCommunityTitle": "社区 {channelId}",
+  "@channelCommunityTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelSystemTitle": "系统通知",
+  "channelDraftPrefix": "[草稿] {draft}",
+  "@channelDraftPrefix": {
+    "placeholders": {
+      "draft": {
+        "type": "String"
+      }
+    }
+  },
+  "channelUnreadMentionPrefix": "[有人@你]",
+  "channelReadStatusSending": "发送中",
+  "channelReadStatusFailed": "发送失败",
+  "channelReadStatusSent": "已发送",
+  "channelReadStatusDelivered": "已送达",
+  "channelReadStatusRead": "已读",
+  "chatSearchButtonTooltip": "搜索消息",
+  "chatSearchPageTitle": "消息搜索",
+  "chatMessageListEmpty": "暂无消息",
+  "chatNetworkUnavailable": "网络不可用，消息可能不是最新。",
+  "chatUnreadHistoryTip": "未读历史",
+  "chatUnreadMentionedTip": "有人@你({count})",
+  "@chatUnreadMentionedTip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatNewMessageTip": "新消息",
+  "chatTypingStatusTip": "正在输入...",
+  "chatReadReceiptUsersTitle": "已读回执用户",
+  "chatReadReceiptUsersReadTab": "已读",
+  "chatReadReceiptUsersUnreadTab": "未读",
+  "chatReadReceiptUsersLoading": "正在加载已读回执用户",
+  "chatReadReceiptUsersEmpty": "暂无用户",
+  "chatReadReceiptUsersLoadFailed": "加载已读回执用户失败",
+  "chatLongPressCopy": "复制",
+  "chatLongPressDelete": "删除",
+  "chatLongPressDeleteForMe": "Delete for me",
+  "chatLongPressDeleteForEveryone": "Delete for everyone",
+  "chatLongPressDeleteForAll": "Delete for everyone",
+  "chatLongPressReference": "回复",
+  "chatLongPressMore": "多选",
+  "chatLongPressForward": "转发",
+  "chatMessageCopied": "消息已复制。",
+  "chatDeleteFailed": "删除消息失败。",
+  "chatDeleteForAllFailed": "为所有人删除消息失败。",
+  "chatDeleteForAllUnavailable": "当前消息状态不支持为所有人删除。",
+  "chatReplyAdded": "已添加回复。",
+  "chatSelectionLimit": "最多可选择 {count} 条消息。",
+  "@chatSelectionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatNoMessagesToForward": "没有可转发的消息。",
+  "chatReferenceMessageCombinedForwardUnsupported": "引用消息不支持合并转发。",
+  "chatCombinedForwardSelectionLimit": "合并转发不能选择 {count} 条及以上消息。",
+  "@chatCombinedForwardSelectionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwardedCombined": "已合并转发 {count} 条消息。",
+  "@chatForwardedCombined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwarded": "已转发 {count} 条消息。",
+  "@chatForwarded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwardFailed": "转发消息失败。",
+  "chatSelectedMessages": "已选择 {count} 条消息",
+  "@chatSelectedMessages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSelectedMessagesCount": "{count} 条消息",
+  "@chatSelectedMessagesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSelectedMentionsCount": "@{count}",
+  "@chatSelectedMentionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messageInputPluginUnavailable": "该插件暂不可用",
+  "messageInputPhotosTitle": "照片",
+  "messageInputPhotoPickerUnavailable": "照片选择器暂不可用",
+  "messageInputVideoTitle": "视频",
+  "messageInputVideoPickerUnavailable": "视频选择器暂不可用",
+  "messageInputCameraTitle": "相机",
+  "messageInputCameraUnavailable": "相机暂不可用",
+  "messageInputFilmingTitle": "拍摄",
+  "messageInputFilmingUnavailable": "拍摄暂不可用",
+  "messageInputFilesTitle": "文件",
+  "messageInputFilePickerUnavailable": "文件选择器暂不可用",
+  "messageInputPermissionDenied": "权限已拒绝",
+  "messageInputVideoTooShort": "视频时长不能小于 1 秒",
+  "messageInputVideoTooLong": "视频时长不能超过 10 秒",
+  "messageInputLocationTitle": "位置",
+  "messageInputLocationPickerUnavailable": "位置选择器暂不可用",
+  "messageInputHint": "消息",
+  "messageInputVoiceUnavailable": "语音输入暂不可用",
+  "messageInputEmptyTextWarning": "请输入消息内容",
+  "messageInputEmojiSendButton": "发送",
+  "messageInputDeleteEmojiTooltip": "删除表情",
+  "messageInputEmptyExtensionPanel": "暂无可用插件",
+  "messageInputEmptyMentionCandidates": "暂无成员",
+  "messageInputVoiceAction": "发送语音",
+  "messageInputVoiceReleaseToSend": "松开发送  |  上划取消",
+  "messageInputVoiceReleaseToCancel": "松开取消",
+  "messageInputVoiceTooShort": "录音时间太短",
+  "messageInputVoiceTooLong": "录音时间超过60秒",
+  "messageInputVoicePermissionDenied": "麦克风权限被拒绝",
+  "messageInputVoiceRecordFailed": "录音失败",
+  "friendAppBarTitle": "好友",
+  "friendListEmpty": "暂无好友",
+  "friendSearchHint": "输入名称、备注或用户 ID",
+  "friendSearchEmpty": "暂无结果",
+  "friendSearchButton": "搜索",
+  "friendAddUserIdHint": "输入好友用户 ID",
+  "friendAddExtraHint": "可选申请消息",
+  "friendAddSubmit": "发送好友申请",
+  "friendAddSuccess": "好友申请已发送",
+  "friendAddEmptyUserId": "请输入好友用户 ID",
+  "friendApplicationsEmpty": "暂无好友申请",
+  "friendApplicationsLoadFailed": "加载好友申请失败",
+  "friendApplicationsLoadingMore": "加载更多好友申请",
+  "friendApplicationAccept": "接受",
+  "friendApplicationDecline": "拒绝",
+  "friendSearchPageTitle": "搜索好友",
+  "friendAddPageTitle": "添加好友",
+  "friendApplicationsPageTitle": "好友申请",
+  "friendRequestFailed": "发送好友申请失败",
+  "friendUserIdLabel": "好友用户 ID",
+  "friendRequestMessageLabel": "申请消息",
+  "friendUnnamed": "未命名好友",
+  "groupManagementTitle": "群管理",
+  "groupManagementLoadFailed": "加载群管理信息失败",
+  "groupNotFound": "未找到群组",
+  "groupProfileManagementSection": "群资料",
+  "groupEditProfileAction": "编辑群资料",
+  "groupLifecycleSection": "群操作",
+  "groupLeaveAction": "退出群组",
+  "groupDismissAction": "解散群组",
+  "groupLeaveConfirmTitle": "退出群组",
+  "groupLeaveConfirmMessage": "确定要退出该群组吗？",
+  "groupDismissConfirmTitle": "解散群组",
+  "groupDismissConfirmMessage": "确定要解散该群组吗？",
+  "groupLeaveSucceeded": "已退出群组",
+  "groupDismissSucceeded": "群组已解散",
+  "groupOperationUnsupported": "当前不支持该群组操作",
+  "groupEditProfileTitle": "编辑群资料",
+  "groupAvatarUrlLabel": "头像 URL",
+  "groupNoticeLabel": "群公告",
+  "groupIntroductionLabel": "群描述",
+  "groupProfileUpdated": "群资料已更新",
+  "groupMemberManagement": "成员管理",
+  "groupMembers": "群成员",
+  "groupAddMembers": "添加成员",
+  "groupRemoveMembers": "移除成员",
+  "groupAddAdmins": "添加管理员",
+  "groupRemoveAdmins": "移除管理员",
+  "groupTransferOwnership": "转让群主",
+  "groupRequests": "群申请",
+  "groupCannotManage": "你当前的角色不能管理该群",
+  "groupRetry": "重试",
+  "groupCreateTitle": "创建群组",
+  "groupNameLabel": "群名称",
+  "groupNameHint": "输入群名称",
+  "groupCreateButton": "创建群组",
+  "groupCreateFailed": "创建群组失败",
+  "groupSearchTitle": "搜索群组",
+  "groupSearchHint": "搜索群组",
+  "groupSearchEmpty": "未找到群组",
+  "groupApplicationsTitle": "群申请",
+  "groupApplicationsEmpty": "暂无群申请",
+  "groupMembersTitle": "群成员",
+  "groupMembersEmpty": "暂无成员",
+  "groupSelectMembersTitle": "选择成员",
+  "groupSelectMembersEmpty": "暂无可用用户",
+  "groupDetailTitle": "群详情",
+  "groupFollowMembersTitle": "关注成员",
+  "groupFollowMembersEmpty": "暂无关注成员",
+  "forwardSelectTitle": "选择转发目标（{count}）",
+  "@forwardSelectTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forwardNoChannels": "暂无可用频道",
+  "forwardIndividually": "逐条转发",
+  "forwardAsCombined": "合并转发",
+  "commonCancel": "取消",
+  "commonDelete": "删除",
+  "commonSave": "保存",
+  "commonClose": "关闭",
+  "commonRetry": "重试",
+  "commonSearch": "搜索",
+  "commonLoading": "加载中...",
+  "commonUnknownUser": "未知用户",
+  "photoImageUnavailable": "图片不可用",
+  "photoVideoPreview": "视频预览",
+  "photoOpenVideo": "打开视频",
+  "filePreviewTitle": "文件预览",
+  "fileUntitled": "未命名文件",
+  "fileOpen": "打开文件",
+  "readReceiptCloseTooltip": "关闭",
+  "readReceiptReadAt": "读取时间 {time}",
+  "@readReceiptReadAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "messageDeletedForEveryone": "消息已为所有人删除",
+  "messageSummaryReply": "[回复]",
+  "messageSummaryImage": "[图片]",
+  "messageSummaryGif": "[GIF]",
+  "messageSummaryVoice": "[语音]",
+  "messageSummaryVideo": "[视频]",
+  "messageSummaryFile": "[文件]",
+  "messageSummaryLocation": "[位置]",
+  "messageSummaryCombinedForward": "[合并转发]",
+  "combineMessageChatHistoryLabel": "聊天记录",
+  "combineMessageGroupChatHistoryTitle": "Group Chat History",
+  "combineMessageTitle": "{names}的聊天记录",
+  "@combineMessageTitle": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeYesterday": "昨天 {time}",
+  "@combineMessageTimeYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeWeekday": "{weekday} {time}",
+  "@combineMessageTimeWeekday": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeDate": "{date} {time}",
+  "@combineMessageTimeDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageLoadFailed": "合并转发消息加载失败",
+  "messageSummaryGroupNotification": "[群通知]",
+  "messageSummaryUnknown": "未知消息",
+  "commonWeekdayMonday": "周一",
+  "commonWeekdayTuesday": "周二",
+  "commonWeekdayWednesday": "周三",
+  "commonWeekdayThursday": "周四",
+  "commonWeekdayFriday": "周五",
+  "commonWeekdaySaturday": "周六",
+  "commonWeekdaySunday": "周日",
+  "commonYesterday": "昨天",
+  "messageInputSendTooltip": "发送",
+  "messageInputReplyTo": "回复 {sender}：{summary}",
+  "@messageInputReplyTo": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "messageInputCancelReplyTooltip": "取消回复",
+  "messageInputSwitchToTextTooltip": "切换到文本",
+  "messageInputVoiceTooltip": "语音输入",
+  "messageInputHideEmojiPanelTooltip": "隐藏表情面板",
+  "messageInputEmojiPanelTooltip": "表情面板",
+  "messageInputHideExtensionPanelTooltip": "隐藏附件面板",
+  "messageInputExtensionPanelTooltip": "附件面板",
+  "commonConfirm": "确认",
+  "commonCreate": "创建",
+  "commonAccept": "接受",
+  "commonDecline": "拒绝",
+  "commonClear": "清除",
+  "commonOperationFailed": "操作失败",
+  "commonUnsupported": "不支持",
+  "groupPageTitle": "我的群组",
+  "groupCreateTooltip": "创建群组",
+  "groupSearchTooltip": "搜索群组",
+  "groupLoadFailed": "加载群组失败",
+  "groupEmptyJoined": "暂无已加入的群组",
+  "groupMemberCount": "{count} 个成员",
+  "@groupMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSelectedMembersCount": "已选择 {count} 人",
+  "@groupSelectedMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupFollowedCount": "已关注 {count} 人",
+  "@groupFollowedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCreatePageTitle": "创建群组",
+  "groupIdLabel": "群组 ID",
+  "groupIdAutoGenerateHint": "留空则自动生成",
+  "groupSelectMembersLabel": "选择成员",
+  "groupSearchContactsHint": "搜索联系人",
+  "groupLoadContactsFailed": "加载联系人失败",
+  "groupNoContactsAvailable": "暂无可选联系人",
+  "groupNameRequired": "请输入群组名称",
+  "groupSelectAtLeastOneMember": "请至少选择一名成员",
+  "groupSearchPageTitle": "搜索群组",
+  "groupSearchNameHint": "请输入群组名称",
+  "groupSearchKeywordEmpty": "请输入关键词搜索群组",
+  "groupSearchFailed": "搜索失败",
+  "groupDetailsPageTitle": "群组详情",
+  "groupDetailsLoadFailed": "加载群组详情失败",
+  "groupAnnouncementLabel": "群公告",
+  "groupDescriptionLabel": "群描述",
+  "groupMembersLabel": "成员",
+  "groupMyRoleLabel": "我的角色",
+  "groupMembersPageTitle": "群成员",
+  "groupFollowedMembersTitle": "关注成员",
+  "groupAddMembersTitle": "添加成员",
+  "groupRemoveMembersTitle": "移除成员",
+  "groupAddAdminsTitle": "添加管理员",
+  "groupRemoveAdminsTitle": "移除管理员",
+  "groupTransferOwnershipTitle": "转让群主",
+  "groupRequestsTitle": "群申请",
+  "groupMemberManagementSection": "成员管理",
+  "groupAdminManagementSection": "管理员管理",
+  "groupRequestManagementSection": "申请管理",
+  "groupCurrentRoleCannotManage": "当前角色无法管理该群组",
+  "groupMembersLoadFailed": "加载群成员失败",
+  "groupNoMembers": "暂无群成员",
+  "groupFollowedMembersLoadFailed": "加载关注成员失败",
+  "groupFollowedMembersSubtitle": "关注重要成员以便快速访问",
+  "groupFollowAction": "关注",
+  "groupUnfollowAction": "取消关注",
+  "groupRequestsLoadFailed": "加载群申请失败",
+  "groupNoPendingRequests": "暂无待处理群申请",
+  "groupApplicationGroupPrefix": "群组：{groupId}",
+  "@groupApplicationGroupPrefix": {
+    "placeholders": {
+      "groupId": {
+        "type": "String"
+      }
+    }
+  },
+  "groupNoMembersAvailable": "暂无可选成员",
+  "groupMemberActionSucceeded": "{action}成功",
+  "@groupMemberActionSucceeded": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "friendLoadFailed": "加载好友失败",
+  "friendSearchTooltip": "搜索好友",
+  "friendAddTooltip": "添加好友",
+  "friendRequestsTooltip": "好友申请",
+  "friendSearchFailed": "搜索好友失败",
+  "friendSearchPrompt": "输入关键词后点击搜索",
+  "friendRequestAccepted": "已接受好友申请",
+  "friendRequestDeclined": "已拒绝好友申请",
+  "friendRequestHandleFailed": "处理好友申请失败",
+  "friendApplicationUnnamed": "未命名申请",
+  "friendApplicationSentRequest": "已发送申请",
+  "friendApplicationReceivedRequest": "收到的申请",
+  "friendApplicationFriendRequest": "好友申请",
+  "friendApplicationPending": "待处理",
+  "friendApplicationAccepted": "已接受",
+  "friendApplicationDeclined": "已拒绝",
+  "friendApplicationExpired": "已过期",
+  "friendApplicationHandledAt": "处理时间 {time}",
+  "@friendApplicationHandledAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "userProfileTitle": "用户资料",
+  "userProfileEmpty": "暂无资料信息",
+  "userProfileLoadFailed": "加载用户资料失败",
+  "commonRefresh": "刷新",
+  "userProfileUserIdLabel": "用户 ID",
+  "userProfileUniqueIdLabel": "唯一 ID",
+  "userProfileEmailLabel": "邮箱",
+  "userProfileBirthdayLabel": "生日",
+  "userProfileGenderLabel": "性别",
+  "userProfileLocationLabel": "位置",
+  "userProfileRoleLabel": "角色",
+  "userProfileLevelLabel": "等级",
+  "userProfileExtProfileLabel": "扩展资料",
+  "userProfileActionStartChat": "发起聊天",
+  "userProfileActionAddFriend": "添加好友",
+  "userProfileActionDeleteFriend": "删除好友",
+  "userProfileActionUpdateRemark": "编辑备注",
+  "userProfileActionUnsupported": "当前操作不可用",
+  "userProfileActionFailed": "操作失败，请重试",
+  "userProfileAddFriendSuccess": "好友申请已发送",
+  "userProfileDeleteFriendSuccess": "好友已删除",
+  "userProfileRemarkSuccess": "备注已更新",
+  "userProfileDeleteFriendConfirmTitle": "删除好友",
+  "userProfileDeleteFriendConfirmMessage": "确定要删除该好友吗？",
+  "userProfileRemarkDialogTitle": "编辑好友备注",
+  "userProfileRemarkLabel": "备注",
+  "searchResultsTitle": "搜索结果",
+  "searchNoMatchingMessages": "没有匹配的消息",
+  "searchResultsCount": "结果：{count}",
+  "@searchResultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSearchFailed": "搜索失败",
+  "searchKeywordLabel": "关键词",
+  "searchUserIdLabel": "用户 ID",
+  "searchStartTimeMsLabel": "开始时间（毫秒）",
+  "searchEndTimeMsLabel": "结束时间（毫秒）",
+  "searchReferenceTimeMsLabel": "参考时间（毫秒）",
+  "searchBeforeCountLabel": "之前数量",
+  "searchAfterCountLabel": "之后数量",
+  "searchModeLabel": "搜索模式",
+  "searchPageSizeLabel": "分页大小",
+  "searchModeKeyword": "关键词搜索",
+  "searchModeUser": "按用户搜索",
+  "searchModeTimeRange": "按时间范围搜索",
+  "searchModeAroundTime": "按时间点前后搜索",
+  "fileSizeBytes": "{size} 字节",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "fileDownload": "下载文件",
+  "fileDownloaded": "已下载",
+  "fileDownloadProgress": "下载中 {progress}%",
+  "@fileDownloadProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "filePathUnavailable": "文件地址不可用",
+  "fileOpenFailed": "文件打开失败",
+  "fileDownloadFailed": "文件下载失败",
+  "fileSizeUnknown": "未知大小",
+  "photoVideoDuration": "{seconds} 秒",
+  "@photoVideoDuration": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "photoOpenFailed": "视频打开失败",
+  "photoSaveSucceeded": "已保存到相册",
+  "photoSaveFailed": "保存失败",
+  "photoSaveUnsupported": "暂不支持保存到相册",
+  "forwardConfirmTitle": "确认转发",
+  "forwardConfirmMessage": "确定以“{mode}”方式转发 {count} 条消息给 {target}？",
+  "@forwardConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "searchUnsupportedMessagePreview": "[不支持预览的消息]"
+}

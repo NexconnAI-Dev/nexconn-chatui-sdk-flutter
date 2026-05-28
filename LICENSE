@@ -1,0 +1,122 @@
+Nexconn SDK License Agreement
+
+Copyright (c) 2026 Nexconn
+All rights reserved.
+
+This agreement is a legal agreement between you or the entity you represent
+("You") and RCLOUD GLOBAL PTE. LTD. ("Nexconn") regarding Your use of the Nexconn SDK and any
+associated software, libraries, sample code, APIs, documentation, updates, or
+other materials made available by Nexconn (collectively, the "SDK").
+
+By downloading, installing, accessing, or otherwise using the SDK, You accept
+the terms of this agreement. If You do not agree to these terms, do not
+download, install, access, or use the SDK.
+
+If You comply with this agreement, You have the rights set out below.
+
+1. Use of the SDK
+Subject to Your compliance with this agreement, Nexconn grants You a limited,
+non-exclusive, non-transferable, non-sublicensable, revocable license to use
+the SDK solely for the purpose of developing, testing, deploying, and operating
+applications or other software that interoperate with Nexconn products and
+services ("Authorized Applications").
+
+2. Scope of License
+The SDK is licensed, not sold. This agreement gives You only limited rights to
+use the SDK. Nexconn reserves all rights not expressly granted to You.
+
+Except as expressly permitted by this agreement or as otherwise required by
+applicable law, You may not:
+
+(a) reverse engineer, decompile, disassemble, or otherwise attempt to derive
+the source code, underlying ideas, algorithms, structure, or organization of
+the SDK;
+
+(b) modify, adapt, alter, translate, or create derivative works of the SDK;
+
+(c) publish, distribute, sublicense, sell, transfer, rent, lease, lend, or
+otherwise make the SDK available to any third party on a standalone basis;
+
+(d) copy the SDK except for a reasonable number of internal copies necessary
+for backup, testing, integration, and deployment of Authorized Applications;
+
+(e) remove, alter, or obscure any copyright, trademark, or other proprietary
+notices included in the SDK;
+
+(f) use the SDK other than in connection with Nexconn products and services;
+
+(g) use the SDK to develop, support, or enable any product or service that is
+competitive with Nexconn products or services; or
+
+(h) circumvent, disable, interfere with, or otherwise bypass any billing,
+metering, authentication, security, usage limitation, or technical controls
+implemented in the SDK or related Nexconn services.
+
+3. Distribution of Authorized Applications
+You may distribute the SDK only as incorporated into an Authorized Application
+and only to the extent necessary for the Authorized Application to interoperate
+with Nexconn products and services. Unless Nexconn has expressly approved such
+distribution in writing, You may not distribute the SDK in source form or as a
+standalone developer toolkit.
+
+4. Use of Nexconn Services
+Your use of Nexconn products and services, and the use of Nexconn products and
+services by anyone using Your Authorized Applications, may be subject to
+separate terms of service, commercial agreements, technical documentation, or
+usage policies published or provided by Nexconn. You are responsible for
+ensuring that Your use of the SDK and any Authorized Application complies with
+all such terms and policies.
+
+5. Ownership
+Nexconn and its licensors retain all right, title, and interest in and to the
+SDK, including all intellectual property rights. No rights are granted by
+implication, estoppel, or otherwise.
+
+6. Feedback
+If You provide Nexconn with feedback, suggestions, ideas, enhancement requests,
+or recommendations regarding the SDK or Nexconn products and services, You
+agree that Nexconn may use such feedback for any purpose without compensation
+or other obligation to You.
+
+7. Termination
+This agreement remains effective until terminated. If You breach this
+agreement, or if Nexconn discontinues the SDK or related services, Nexconn may
+suspend or terminate this agreement, or terminate Your right to use the SDK.
+Upon termination, You must cease all use of the SDK and destroy all copies of
+the SDK in Your possession or control, except to the extent the SDK remains
+embedded in already deployed Authorized Applications as permitted by applicable
+law or a separate written agreement between You and Nexconn.
+
+8. Reservation of Rights
+Except as expressly permitted in this agreement, You are not authorized to use,
+copy, modify, edit, create derivative works from, distribute, or otherwise
+exploit the SDK or any materials provided with it.
+
+9. Disclaimer
+THE SDK IS PROVIDED "AS IS" AND "AS AVAILABLE." YOU BEAR THE RISK OF USING IT.
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, NEXCONN DISCLAIMS ALL
+WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND
+NON-INFRINGEMENT. NEXCONN DOES NOT WARRANT THAT THE SDK OR RELATED SERVICES
+WILL BE UNINTERRUPTED, SECURE, AVAILABLE, OR ERROR-FREE.
+
+10. Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, NEXCONN AND ITS AFFILIATES,
+LICENSORS, AND SUPPLIERS WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA,
+REVENUE, PROFITS, GOODWILL, OR BUSINESS INTERRUPTION, ARISING OUT OF OR
+RELATING TO THE SDK, NEXCONN PRODUCTS OR SERVICES, OR THIS AGREEMENT, EVEN IF
+NEXCONN HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+11. Modifications to This Agreement
+Nexconn may update this agreement from time to time. If Nexconn makes a
+material change, Nexconn may provide notice by reasonable means, including by
+providing an updated version with the SDK or through Nexconn's website or
+developer documentation. Your continued use of the SDK after the updated
+agreement becomes effective constitutes Your acceptance of the updated
+agreement.
+
+12. Entire Agreement
+Unless superseded by a separate written agreement signed by both You and
+Nexconn, this agreement constitutes the entire agreement between You and
+Nexconn regarding the SDK.

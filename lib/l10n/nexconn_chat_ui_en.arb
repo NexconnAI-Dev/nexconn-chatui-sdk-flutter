@@ -1,0 +1,575 @@
+{
+  "@@locale": "en",
+  "channelAppBarTitle": "Chats",
+  "channelLongPressCancel": "Cancel",
+  "channelListEmpty": "No messages here yet",
+  "channelActionPin": "Pin",
+  "channelActionUnpin": "Unpin",
+  "channelActionMute": "Mute",
+  "channelActionUnmute": "Unmute",
+  "channelActionDelete": "Delete",
+  "channelActionFailed": "Action failed. Please try again.",
+  "channelSearchPlaceholder": "Search chats",
+  "channelNetworkUnavailable": "Network unavailable. Please check your network settings.",
+  "channelGroupTitle": "Group {channelId}",
+  "@channelGroupTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelOpenTitle": "Open channel {channelId}",
+  "@channelOpenTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelCommunityTitle": "Community {channelId}",
+  "@channelCommunityTitle": {
+    "placeholders": {
+      "channelId": {
+        "type": "String"
+      }
+    }
+  },
+  "channelSystemTitle": "System notifications",
+  "channelDraftPrefix": "[Draft] {draft}",
+  "@channelDraftPrefix": {
+    "placeholders": {
+      "draft": {
+        "type": "String"
+      }
+    }
+  },
+  "channelUnreadMentionPrefix": "[@You]",
+  "channelReadStatusSending": "Sending",
+  "channelReadStatusFailed": "Failed",
+  "channelReadStatusSent": "Sent",
+  "channelReadStatusDelivered": "Delivered",
+  "channelReadStatusRead": "Read",
+  "chatSearchButtonTooltip": "Search messages",
+  "chatSearchPageTitle": "Message Search",
+  "chatMessageListEmpty": "No messages here yet",
+  "chatNetworkUnavailable": "Network unavailable. Please check your network settings.",
+  "chatUnreadHistoryTip": "Unread history",
+  "chatUnreadMentionedTip": "@You ({count})",
+  "@chatUnreadMentionedTip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatNewMessageTip": "New messages",
+  "chatTypingStatusTip": "Typing...",
+  "chatReadReceiptUsersTitle": "Read Receipt Users",
+  "chatReadReceiptUsersReadTab": "Read",
+  "chatReadReceiptUsersUnreadTab": "Unread",
+  "chatReadReceiptUsersLoading": "Loading read receipt users",
+  "chatReadReceiptUsersEmpty": "No users",
+  "chatReadReceiptUsersLoadFailed": "Failed to load read receipt users",
+  "chatLongPressCopy": "Copy",
+  "chatLongPressDelete": "Delete",
+  "chatLongPressDeleteForMe": "Delete for me",
+  "chatLongPressDeleteForEveryone": "Delete for everyone",
+  "chatLongPressDeleteForAll": "Delete for everyone",
+  "chatLongPressReference": "Reply",
+  "chatLongPressMore": "Multi-select",
+  "chatLongPressForward": "Forward",
+  "chatMessageCopied": "Message copied.",
+  "chatDeleteFailed": "Failed to delete message.",
+  "chatDeleteForAllFailed": "Failed to delete message.",
+  "chatDeleteForAllUnavailable": "This message cannot be deleted for everyone right now.",
+  "chatReplyAdded": "Reply added.",
+  "chatSelectionLimit": "You can select up to {count} messages.",
+  "@chatSelectionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatNoMessagesToForward": "No messages to forward.",
+  "chatReferenceMessageCombinedForwardUnsupported": "Reference messages cannot be forwarded as combined.",
+  "chatCombinedForwardSelectionLimit": "Combined forwarding supports fewer than {count} messages.",
+  "@chatCombinedForwardSelectionLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwardedCombined": "Forwarded {count} messages as combined.",
+  "@chatForwardedCombined": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwarded": "Forwarded {count} messages.",
+  "@chatForwarded": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatForwardFailed": "Failed to forward messages.",
+  "chatSelectedMessages": "{count} messages selected",
+  "@chatSelectedMessages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSelectedMessagesCount": "{count} messages",
+  "@chatSelectedMessagesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSelectedMentionsCount": "@{count}",
+  "@chatSelectedMentionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messageInputPluginUnavailable": "This plugin is not available yet",
+  "messageInputPhotosTitle": "Photos",
+  "messageInputPhotoPickerUnavailable": "Photo picker is not available yet",
+  "messageInputVideoTitle": "Video",
+  "messageInputVideoPickerUnavailable": "Video picker is not available yet",
+  "messageInputCameraTitle": "Camera",
+  "messageInputCameraUnavailable": "Camera is not available yet",
+  "messageInputFilmingTitle": "Record",
+  "messageInputFilmingUnavailable": "Video recording is not available yet",
+  "messageInputFilesTitle": "Files",
+  "messageInputFilePickerUnavailable": "File picker is not available yet",
+  "messageInputPermissionDenied": "Permission denied",
+  "messageInputVideoTooShort": "Video must be at least 1 second",
+  "messageInputVideoTooLong": "Video must be 10 seconds or less",
+  "messageInputLocationTitle": "Location",
+  "messageInputLocationPickerUnavailable": "Location picker is not available yet",
+  "messageInputHint": "Message",
+  "messageInputVoiceUnavailable": "Voice input is not available yet",
+  "messageInputEmptyTextWarning": "Enter a message",
+  "messageInputEmojiSendButton": "Send",
+  "messageInputDeleteEmojiTooltip": "Delete emoji",
+  "messageInputEmptyExtensionPanel": "No plugins available",
+  "messageInputEmptyMentionCandidates": "No members available",
+  "messageInputVoiceAction": "Send voice",
+  "messageInputVoiceReleaseToSend": "Release to send  |  Swipe up to cancel",
+  "messageInputVoiceReleaseToCancel": "Release to cancel",
+  "messageInputVoiceTooShort": "Recording time is too short",
+  "messageInputVoiceTooLong": "Recording time exceeds 60 seconds",
+  "messageInputVoicePermissionDenied": "Microphone permission denied",
+  "messageInputVoiceRecordFailed": "Recording failed",
+  "friendAppBarTitle": "Friends",
+  "friendListEmpty": "No friends yet",
+  "friendSearchHint": "Enter a name, remark, or user ID",
+  "friendSearchEmpty": "No results",
+  "friendSearchButton": "Search",
+  "friendAddUserIdHint": "Enter friend user ID",
+  "friendAddExtraHint": "Optional request message",
+  "friendAddSubmit": "Send friend request",
+  "friendAddSuccess": "Friend request sent",
+  "friendAddEmptyUserId": "Enter a friend user ID",
+  "friendApplicationsEmpty": "No friend requests",
+  "friendApplicationsLoadFailed": "Failed to load friend requests",
+  "friendApplicationsLoadingMore": "Load more friend requests",
+  "friendApplicationAccept": "Accept",
+  "friendApplicationDecline": "Decline",
+  "friendSearchPageTitle": "Search friends",
+  "friendAddPageTitle": "Add friend",
+  "friendApplicationsPageTitle": "Friend requests",
+  "friendRequestFailed": "Failed to send friend request",
+  "friendUserIdLabel": "Friend user ID",
+  "friendRequestMessageLabel": "Request message",
+  "friendUnnamed": "Unnamed friend",
+  "groupManagementTitle": "Group management",
+  "groupManagementLoadFailed": "Failed to load group management info",
+  "groupNotFound": "Group not found",
+  "groupProfileManagementSection": "Group profile",
+  "groupEditProfileAction": "Edit group profile",
+  "groupLifecycleSection": "Group actions",
+  "groupLeaveAction": "Leave group",
+  "groupDismissAction": "Dismiss group",
+  "groupLeaveConfirmTitle": "Leave group",
+  "groupLeaveConfirmMessage": "Are you sure you want to leave this group?",
+  "groupDismissConfirmTitle": "Dismiss group",
+  "groupDismissConfirmMessage": "Are you sure you want to dismiss this group?",
+  "groupLeaveSucceeded": "Left group",
+  "groupDismissSucceeded": "Group dismissed",
+  "groupOperationUnsupported": "This group operation is not supported",
+  "groupEditProfileTitle": "Edit group profile",
+  "groupAvatarUrlLabel": "Avatar URL",
+  "groupNoticeLabel": "Announcement",
+  "groupIntroductionLabel": "Description",
+  "groupProfileUpdated": "Group profile updated",
+  "groupMemberManagement": "Member management",
+  "groupMembers": "Group members",
+  "groupAddMembers": "Add members",
+  "groupRemoveMembers": "Remove members",
+  "groupAddAdmins": "Add admins",
+  "groupRemoveAdmins": "Remove admins",
+  "groupTransferOwnership": "Transfer ownership",
+  "groupRequests": "Group requests",
+  "groupCannotManage": "Your current role cannot manage this group",
+  "groupRetry": "Retry",
+  "groupCreateTitle": "Create group",
+  "groupNameLabel": "Group name",
+  "groupNameHint": "Enter group name",
+  "groupCreateButton": "Create group",
+  "groupCreateFailed": "Failed to create group",
+  "groupSearchTitle": "Search groups",
+  "groupSearchHint": "Search groups",
+  "groupSearchEmpty": "No groups found",
+  "groupApplicationsTitle": "Group requests",
+  "groupApplicationsEmpty": "No group requests",
+  "groupMembersTitle": "Group members",
+  "groupMembersEmpty": "No members",
+  "groupSelectMembersTitle": "Select members",
+  "groupSelectMembersEmpty": "No users available",
+  "groupDetailTitle": "Group details",
+  "groupFollowMembersTitle": "Followed members",
+  "groupFollowMembersEmpty": "No followed members",
+  "forwardSelectTitle": "Select Forward Target ({count})",
+  "@forwardSelectTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "forwardNoChannels": "No channels available",
+  "forwardIndividually": "Forward one by one",
+  "forwardAsCombined": "Merge and forward",
+  "commonCancel": "Cancel",
+  "commonDelete": "Delete",
+  "commonSave": "Save",
+  "commonClose": "Close",
+  "commonRetry": "Retry",
+  "commonSearch": "Search",
+  "commonLoading": "Loading...",
+  "commonUnknownUser": "Unknown user",
+  "photoImageUnavailable": "Image unavailable",
+  "photoVideoPreview": "Video Preview",
+  "photoOpenVideo": "Open Video",
+  "filePreviewTitle": "File Preview",
+  "fileUntitled": "Untitled file",
+  "fileOpen": "Open File",
+  "readReceiptCloseTooltip": "Close",
+  "readReceiptReadAt": "Read at {time}",
+  "@readReceiptReadAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "messageDeletedForEveryone": "This message was deleted for everyone",
+  "messageSummaryReply": "[Reply]",
+  "messageSummaryImage": "[Image]",
+  "messageSummaryGif": "[GIF]",
+  "messageSummaryVoice": "[Voice]",
+  "messageSummaryVideo": "[Video]",
+  "messageSummaryFile": "[File]",
+  "messageSummaryLocation": "[Location]",
+  "messageSummaryCombinedForward": "[Combined Forward]",
+  "combineMessageChatHistoryLabel": "Chat History",
+  "combineMessageGroupChatHistoryTitle": "Group Chat History",
+  "combineMessageTitle": "{names}'s Chat History",
+  "@combineMessageTitle": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeYesterday": "Yesterday {time}",
+  "@combineMessageTimeYesterday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeWeekday": "{weekday} {time}",
+  "@combineMessageTimeWeekday": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageTimeDate": "{date} {time}",
+  "@combineMessageTimeDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "combineMessageLoadFailed": "Failed to load combined message",
+  "messageSummaryGroupNotification": "[Group Notification]",
+  "messageSummaryUnknown": "Unknown Message",
+  "commonWeekdayMonday": "Mon",
+  "commonWeekdayTuesday": "Tue",
+  "commonWeekdayWednesday": "Wed",
+  "commonWeekdayThursday": "Thu",
+  "commonWeekdayFriday": "Fri",
+  "commonWeekdaySaturday": "Sat",
+  "commonWeekdaySunday": "Sun",
+  "commonYesterday": "Yesterday",
+  "messageInputSendTooltip": "Send",
+  "messageInputReplyTo": "Reply to {sender}: {summary}",
+  "@messageInputReplyTo": {
+    "placeholders": {
+      "sender": {
+        "type": "String"
+      },
+      "summary": {
+        "type": "String"
+      }
+    }
+  },
+  "messageInputCancelReplyTooltip": "Cancel reply",
+  "messageInputSwitchToTextTooltip": "Switch to text",
+  "messageInputVoiceTooltip": "Voice input",
+  "messageInputHideEmojiPanelTooltip": "Hide emoji panel",
+  "messageInputEmojiPanelTooltip": "Emoji panel",
+  "messageInputHideExtensionPanelTooltip": "Hide attachment panel",
+  "messageInputExtensionPanelTooltip": "Attachment panel",
+  "commonConfirm": "Confirm",
+  "commonCreate": "Create",
+  "commonAccept": "Accept",
+  "commonDecline": "Decline",
+  "commonClear": "Clear",
+  "commonOperationFailed": "Operation failed",
+  "commonUnsupported": "Unsupported",
+  "groupPageTitle": "My groups",
+  "groupCreateTooltip": "Create group",
+  "groupSearchTooltip": "Search groups",
+  "groupLoadFailed": "Failed to load groups",
+  "groupEmptyJoined": "No joined groups",
+  "groupMemberCount": "{count} members",
+  "@groupMemberCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupSelectedMembersCount": "{count} selected",
+  "@groupSelectedMembersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupFollowedCount": "{count} followed",
+  "@groupFollowedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCreatePageTitle": "Create group",
+  "groupIdLabel": "Group ID",
+  "groupIdAutoGenerateHint": "Leave blank to auto-generate",
+  "groupSelectMembersLabel": "Select members",
+  "groupSearchContactsHint": "Search contacts",
+  "groupLoadContactsFailed": "Failed to load contacts",
+  "groupNoContactsAvailable": "No contacts available",
+  "groupNameRequired": "Enter a group name",
+  "groupSelectAtLeastOneMember": "Select at least one member",
+  "groupSearchPageTitle": "Search groups",
+  "groupSearchNameHint": "Enter group name",
+  "groupSearchKeywordEmpty": "Enter a keyword to search groups",
+  "groupSearchFailed": "Search failed",
+  "groupDetailsPageTitle": "Group details",
+  "groupDetailsLoadFailed": "Failed to load group details",
+  "groupAnnouncementLabel": "Announcement",
+  "groupDescriptionLabel": "Description",
+  "groupMembersLabel": "Members",
+  "groupMyRoleLabel": "My role",
+  "groupMembersPageTitle": "Group members",
+  "groupFollowedMembersTitle": "Followed members",
+  "groupAddMembersTitle": "Add members",
+  "groupRemoveMembersTitle": "Remove members",
+  "groupAddAdminsTitle": "Add admins",
+  "groupRemoveAdminsTitle": "Remove admins",
+  "groupTransferOwnershipTitle": "Transfer ownership",
+  "groupRequestsTitle": "Group requests",
+  "groupMemberManagementSection": "Member management",
+  "groupAdminManagementSection": "Admin management",
+  "groupRequestManagementSection": "Request management",
+  "groupCurrentRoleCannotManage": "Your current role cannot manage this group",
+  "groupMembersLoadFailed": "Failed to load group members",
+  "groupNoMembers": "No group members",
+  "groupFollowedMembersLoadFailed": "Failed to load followed members",
+  "groupFollowedMembersSubtitle": "Follow key members for quick access",
+  "groupFollowAction": "Follow",
+  "groupUnfollowAction": "Unfollow",
+  "groupRequestsLoadFailed": "Failed to load group requests",
+  "groupNoPendingRequests": "No pending group requests",
+  "groupApplicationGroupPrefix": "Group: {groupId}",
+  "@groupApplicationGroupPrefix": {
+    "placeholders": {
+      "groupId": {
+        "type": "String"
+      }
+    }
+  },
+  "groupNoMembersAvailable": "No members available",
+  "groupMemberActionSucceeded": "{action} succeeded",
+  "@groupMemberActionSucceeded": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "friendLoadFailed": "Failed to load friends",
+  "friendSearchTooltip": "Search friends",
+  "friendAddTooltip": "Add friend",
+  "friendRequestsTooltip": "Friend requests",
+  "friendSearchFailed": "Failed to search friends",
+  "friendSearchPrompt": "Enter a keyword, then tap Search",
+  "friendRequestAccepted": "Friend request accepted",
+  "friendRequestDeclined": "Friend request declined",
+  "friendRequestHandleFailed": "Failed to handle friend request",
+  "friendApplicationUnnamed": "Unnamed request",
+  "friendApplicationSentRequest": "Sent request",
+  "friendApplicationReceivedRequest": "Received request",
+  "friendApplicationFriendRequest": "Friend request",
+  "friendApplicationPending": "Pending",
+  "friendApplicationAccepted": "Accepted",
+  "friendApplicationDeclined": "Declined",
+  "friendApplicationExpired": "Expired",
+  "friendApplicationHandledAt": "Handled {time}",
+  "@friendApplicationHandledAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "userProfileTitle": "User Profile",
+  "userProfileEmpty": "No profile information",
+  "userProfileLoadFailed": "Failed to load user profile",
+  "commonRefresh": "Refresh",
+  "userProfileUserIdLabel": "User ID",
+  "userProfileUniqueIdLabel": "Unique ID",
+  "userProfileEmailLabel": "Email",
+  "userProfileBirthdayLabel": "Birthday",
+  "userProfileGenderLabel": "Gender",
+  "userProfileLocationLabel": "Location",
+  "userProfileRoleLabel": "Role",
+  "userProfileLevelLabel": "Level",
+  "userProfileExtProfileLabel": "Extended profile",
+  "userProfileActionStartChat": "Message",
+  "userProfileActionAddFriend": "Add friend",
+  "userProfileActionDeleteFriend": "Delete friend",
+  "userProfileActionUpdateRemark": "Edit remark",
+  "userProfileActionUnsupported": "This action is not available",
+  "userProfileActionFailed": "Action failed. Please try again.",
+  "userProfileAddFriendSuccess": "Friend request sent",
+  "userProfileDeleteFriendSuccess": "Friend deleted",
+  "userProfileRemarkSuccess": "Remark updated",
+  "userProfileDeleteFriendConfirmTitle": "Delete friend",
+  "userProfileDeleteFriendConfirmMessage": "Are you sure you want to delete this friend?",
+  "userProfileRemarkDialogTitle": "Edit friend remark",
+  "userProfileRemarkLabel": "Remark",
+  "searchResultsTitle": "Search Results",
+  "searchNoMatchingMessages": "No matching messages",
+  "searchResultsCount": "Results: {count}",
+  "@searchResultsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "chatSearchFailed": "Search failed",
+  "searchKeywordLabel": "Keyword",
+  "searchUserIdLabel": "User ID",
+  "searchStartTimeMsLabel": "Start time (ms)",
+  "searchEndTimeMsLabel": "End time (ms)",
+  "searchReferenceTimeMsLabel": "Reference time (ms)",
+  "searchBeforeCountLabel": "Before count",
+  "searchAfterCountLabel": "After count",
+  "searchModeLabel": "Search mode",
+  "searchPageSizeLabel": "Page size",
+  "searchModeKeyword": "Keyword search",
+  "searchModeUser": "Search by user",
+  "searchModeTimeRange": "Search by time range",
+  "searchModeAroundTime": "Search around time",
+  "fileSizeBytes": "{size} bytes",
+  "@fileSizeBytes": {
+    "placeholders": {
+      "size": {
+        "type": "int"
+      }
+    }
+  },
+  "fileDownload": "Download File",
+  "fileDownloaded": "Downloaded",
+  "fileDownloadProgress": "Downloading {progress}%",
+  "@fileDownloadProgress": {
+    "placeholders": {
+      "progress": {
+        "type": "int"
+      }
+    }
+  },
+  "filePathUnavailable": "File path unavailable",
+  "fileOpenFailed": "Failed to open file",
+  "fileDownloadFailed": "Failed to download file",
+  "fileSizeUnknown": "Unknown size",
+  "photoVideoDuration": "{seconds} s",
+  "@photoVideoDuration": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "photoOpenFailed": "Failed to open video",
+  "photoSaveSucceeded": "Saved to album",
+  "photoSaveFailed": "Failed to save",
+  "photoSaveUnsupported": "Saving to the album is not available yet",
+  "forwardConfirmTitle": "Confirm Forward",
+  "forwardConfirmMessage": "Forward {count} message(s) to {target} as {mode}?",
+  "@forwardConfirmMessage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "target": {
+        "type": "String"
+      },
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "searchUnsupportedMessagePreview": "[Unsupported message]"
+}

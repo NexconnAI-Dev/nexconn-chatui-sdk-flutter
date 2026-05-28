@@ -1,0 +1,5 @@
+arb-dir: lib/l10n
+template-arb-file: nexconn_chat_ui_en.arb
+output-localization-file: nexconn_chat_ui_localizations.dart
+output-class: NexconnChatUILocalizations
+nullable-getter: false
