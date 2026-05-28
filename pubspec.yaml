@@ -2,7 +2,6 @@ name: ai_nexconn_chatui_plugin
 description: A Flutter UI package for Nexconn Chat conversations and messages.
 version: 26.2.7
 homepage: https://github.com/NexconnAI-Dev/nexconn-chatui-sdk-flutter
-publish_to: none
 
 environment:
   sdk: ^3.9.2
