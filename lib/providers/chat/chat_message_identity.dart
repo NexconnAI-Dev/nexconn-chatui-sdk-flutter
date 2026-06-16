@@ -32,14 +32,7 @@ extension _ChatProviderMessageIdentity on ChatProvider {
   }
 
   bool _isRecallMessage(Message message) {
-    if (_isLegacyPlaceholderMessage(message)) {
-      return true;
-    }
-    try {
-      return message.messageType == MessageType.recall;
-    } on NoSuchMethodError {
-      return false;
-    }
+    return isDeleteForAllPlaceholderMessage(message);
   }
 
   MessageDirection? _directionOf(Message message) {

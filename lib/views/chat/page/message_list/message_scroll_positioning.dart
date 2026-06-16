@@ -104,7 +104,7 @@ extension _MessageScrollPositioning on _MessageListWidgetState {
         lastMessageKey != previousLastMessageKey &&
         lastMessageScrollIdentity != previousLastMessageScrollIdentity &&
         messages.last.direction == MessageDirection.send &&
-        messages.last.messageType != MessageType.recall) {
+        !isDeleteForAllPlaceholderMessage(messages.last)) {
       _scheduleStableScrollToBottom(provider);
       return;
     }
@@ -115,7 +115,7 @@ extension _MessageScrollPositioning on _MessageListWidgetState {
         lastMessageKey != previousLastMessageKey &&
         outgoingAppendReserveGeneration != null &&
         messages.last.direction == MessageDirection.send &&
-        messages.last.messageType != MessageType.recall) {
+        !isDeleteForAllPlaceholderMessage(messages.last)) {
       _jumpToLatestMessageForOutgoingAppendFrame(provider);
       _scheduleOutgoingAppendAfterReserve(
         provider,

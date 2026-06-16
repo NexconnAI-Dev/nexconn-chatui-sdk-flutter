@@ -163,7 +163,7 @@ class EngineProvider with ChangeNotifier {
     _clearSessionState(clearCurrentUser: true);
     _acceptingEngineEvents = false;
     notifyListeners();
-    NCEngine.engine.setModuleName("nexconnchatuiflutter", "26.2.7");
+    NCEngine.engine.setModuleName("nexconnchatuiflutter", "26.2.8");
     final code = await NCEngine.connect(params, (userId, error) {
       if (generation != _connectionGeneration) {
         return;

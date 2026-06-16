@@ -19,6 +19,7 @@ import 'package:rongcloud_im_wrapper_plugin/rongcloud_im_wrapper_plugin.dart';
 import 'package:dio/dio.dart';
 
 import 'engine_provider.dart';
+import '../utils/message_type_util.dart';
 part 'chat/chat_message_types.dart';
 part 'chat/chat_read_receipt_types.dart';
 part 'chat/chat_message_search_types.dart';

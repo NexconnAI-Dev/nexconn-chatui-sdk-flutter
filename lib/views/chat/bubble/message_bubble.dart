@@ -21,6 +21,7 @@ import '../../../utils/chatui_asset.dart';
 import '../../../utils/chatui_image_util.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/message_content_util.dart';
+import '../../../utils/message_type_util.dart';
 import '../../../utils/time_util.dart';
 import '../../../utils/voice_message_layout.dart';
 import '../../chat_extras/file_preview_page.dart';
@@ -212,7 +213,7 @@ abstract class _MessageBubbleBase extends StatelessWidget {
     if (_isGroupNotificationMessage(message)) {
       return _GroupNotificationMessageBubble(args);
     }
-    if (message.messageType == MessageType.recall) {
+    if (isDeleteForAllPlaceholderMessage(message)) {
       return _RecallMessageBubble(args);
     }
     return _UnknownMessageBubble(args);

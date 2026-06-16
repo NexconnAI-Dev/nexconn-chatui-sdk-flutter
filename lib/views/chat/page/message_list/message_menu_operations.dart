@@ -110,7 +110,7 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
 
   bool _isOwnSentActionableMessage(Message message) {
     return message.direction == MessageDirection.send &&
-        message.messageType != MessageType.recall &&
+        !isDeleteForAllPlaceholderMessage(message) &&
         message.sentStatus != SentStatus.sending &&
         message.sentStatus != SentStatus.failed &&
         message.sentStatus != SentStatus.canceled;
@@ -120,7 +120,7 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
     if (_isSendingMessage(message)) {
       return false;
     }
-    return message.messageType != MessageType.recall &&
+    return !isDeleteForAllPlaceholderMessage(message) &&
         message is! CombineMessage &&
         message is! HDVoiceMessage &&
         message is! ShortVideoMessage &&

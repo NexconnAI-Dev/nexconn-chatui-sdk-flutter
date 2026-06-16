@@ -15,6 +15,7 @@ import '../../../routes/nexconn_chat_ui_routes.dart';
 import '../../../ui_config/chat/page/chat_page_config.dart';
 import '../../../utils/chatui_asset.dart';
 import '../../../utils/constants.dart';
+import '../../../utils/message_type_util.dart';
 import '../../../utils/time_util.dart';
 import '../../../l10n/nexconn_chat_ui_l10n.dart';
 import '../../chat_extras/combine_message_detail_page.dart';

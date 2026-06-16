@@ -107,7 +107,7 @@ extension _MessageBubbleProfile on _MessageBubbleBase {
     ].join('#');
   }
 
-  bool get _isRecallMessage => message.messageType == MessageType.recall;
+  bool get _isRecallMessage => isDeleteForAllPlaceholderMessage(message);
 
   ChatMessageBubbleBuilder? get _customBubbleBuilder {
     final type = message.messageType;

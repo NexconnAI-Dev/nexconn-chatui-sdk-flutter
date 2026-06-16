@@ -4,6 +4,7 @@ import 'package:rongcloud_im_wrapper_plugin/rongcloud_im_wrapper_plugin.dart'
 
 import '../l10n/nexconn_chat_ui_localizations.dart';
 import '../l10n/nexconn_chat_ui_localizations_en.dart';
+import 'message_type_util.dart';
 
 String get deletedForEveryoneMessageText =>
     NexconnChatUILocalizationsEn().messageDeletedForEveryone;
@@ -60,7 +61,7 @@ String messageSummary(
       return summary;
     }
   }
-  if (message.messageType == MessageType.recall) {
+  if (isDeleteForAllPlaceholderMessage(message)) {
     return l10n.messageDeletedForEveryone;
   }
   return '[${message.messageType?.name ?? l10n.messageSummaryUnknown}]';

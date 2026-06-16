@@ -1509,7 +1509,7 @@ class _CombineInfoMessage implements Message {
   int? get sentTime => entry.timestamp;
 
   @override
-  MessageType? get messageType => MessageType.combineV2;
+  MessageType? get messageType => MessageType.combine;
 
   @override
   Map<String, dynamic> toJson({bool filterEmpty = true}) => {
@@ -1565,7 +1565,7 @@ class _CombineNestedMessage implements CombineMessage {
   SentStatus? get sentStatus => SentStatus.sent;
 
   @override
-  MessageType? get messageType => MessageType.combineV2;
+  MessageType? get messageType => MessageType.combine;
 
   @override
   UserInfo? get userInfo => null;
