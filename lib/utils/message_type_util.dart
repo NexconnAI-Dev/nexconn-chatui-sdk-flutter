@@ -7,12 +7,15 @@ bool isDeleteForAllPlaceholderMessage(Message message) {
   if (messageTypeName == '_RecalledPlaceholderMessage') {
     return true;
   }
-  if (message is UnknownMessage) {
-    return message.objectName == _recallNotificationObjectName;
+  if (message is UnknownMessage &&
+      message.objectName == _recallNotificationObjectName) {
+    return true;
   }
   try {
-    return message.toJson(filterEmpty: false)['objectName'] ==
-        _recallNotificationObjectName;
+    if (message.toJson(filterEmpty: false)['objectName'] ==
+        _recallNotificationObjectName) {
+      return true;
+    }
   } catch (_) {
     // Continue with raw type detection below.
   }

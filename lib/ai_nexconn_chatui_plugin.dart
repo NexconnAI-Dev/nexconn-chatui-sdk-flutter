@@ -8,6 +8,7 @@ library;
 
 export 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart'
     show
+        AppSettings,
         BaseChannel,
         ChannelIdentifier,
         ChannelNoDisturbLevel,
@@ -28,6 +29,7 @@ export 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart'
         CustomMessageParams,
         CustomMessagePersistentFlag,
         DirectChannel,
+        EditedMessageDraft,
         ErrorHandler,
         FavoriteInfo,
         FileMessage,
@@ -45,6 +47,7 @@ export 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart'
         HDVoiceMessageParams,
         ImageMessage,
         ImageMessageParams,
+        InformationNotificationMessage,
         InitParams,
         MediaMessage,
         MentionedInfo,
@@ -53,8 +56,13 @@ export 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart'
         Message,
         MessageDirection,
         MessageHandler,
+        MessageModifyInfo,
+        MessageModifyStatus,
         MessageOperationPolicy,
         MessageParams,
+        MessageIdentifier,
+        MessageReadReceiptResponse,
+        MessageReadReceiptStatus,
         MessageType,
         MessagesQuery,
         MessagesQueryParams,
@@ -67,8 +75,11 @@ export 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart'
         LocationMessage,
         LocationMessageParams,
         ReceivedStatus,
+        ReadReceiptInfo,
+        ReadReceiptVersion,
         ReferenceMessage,
         ReferenceMessageParams,
+        ReferenceMessageStatus,
         FriendApplicationInfo,
         FriendApplicationStatus,
         FriendApplicationType,
@@ -98,6 +109,7 @@ export 'providers/audio_player_provider.dart';
 export 'providers/channel_provider.dart';
 export 'providers/engine_provider.dart';
 export 'providers/message_input_provider.dart';
+export 'providers/read_receipt_repository.dart';
 export 'providers/user_profile_provider.dart';
 export 'providers/theme_provider.dart';
 
@@ -116,8 +128,10 @@ export 'utils/constants.dart';
 export 'utils/message_content_util.dart';
 export 'utils/time_util.dart';
 export 'utils/video_playback_backend.dart';
+export 'utils/video_duration_util.dart';
 
 export 'views/chat/bubble/message_bubble.dart';
+export 'views/chat/bubble/read_receipt_indicator.dart';
 export 'views/chat/input/message_input_widget.dart'
     hide messageInputPluginNeedsPhotoLibraryPermission;
 export 'views/chat/page/chat_page.dart';
@@ -128,7 +142,7 @@ export 'views/chat_extras/forward_select_page.dart';
 export 'views/chat_extras/chat_message_search_page.dart';
 export 'views/chat_extras/chat_message_search_result_page.dart';
 export 'views/chat_extras/photo_preview_page.dart';
-export 'views/chat_extras/read_receipt_users_sheet.dart';
+export 'views/chat_extras/read_receipt_detail_page.dart';
 export 'views/chat_extras/short_video_preview_page.dart';
 export 'views/channel/item/channel_item.dart';
 export 'views/channel/page/channel_page.dart';

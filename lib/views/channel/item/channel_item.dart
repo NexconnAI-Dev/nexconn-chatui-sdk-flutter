@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../providers/channel_provider.dart';
 import '../../../providers/engine_provider.dart';
+import '../../../providers/read_receipt_repository.dart';
 import '../../../providers/theme_provider.dart';
 import '../../../models/chat_profile_info.dart';
 import '../../../ui_config/channel/channel_config.dart';
@@ -12,6 +13,7 @@ import '../../../utils/chatui_asset.dart';
 import '../../../utils/message_content_util.dart';
 import '../../../utils/time_util.dart';
 import '../../../l10n/nexconn_chat_ui_l10n.dart';
+import '../../chat/bubble/read_receipt_indicator.dart';
 
 part 'layout/channel_item_layout.dart';
 part 'avatar/channel_item_avatar.dart';

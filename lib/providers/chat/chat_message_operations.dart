@@ -44,8 +44,74 @@ abstract class ChatMessageOperations {
   );
 }
 
-class _NexconnChatMessageOperations implements ChatMessageOperations {
+/// Optional lookup capability for [ChatMessageOperations] implementations.
+///
+/// Keeping message lookup separate preserves source compatibility for custom
+/// operation implementations created before message editing was introduced.
+abstract class ChatMessageLookupOperations {
+  /// Resolves one message by its server-side unique ID.
+  ///
+  /// A `null` result means the SDK completed successfully but did not find the
+  /// message. Implementations should throw [NCError] when the lookup itself
+  /// fails so callers can distinguish a temporary failure from a stale draft.
+  Future<Message?> getMessageById(String messageId);
+}
+
+/// Optional paging capability for [ChatMessageOperations] implementations.
+///
+/// Keeping this separate preserves source compatibility for existing custom
+/// operation implementations while allowing the built-in detail sheet to load
+/// large member lists incrementally.
+abstract class ChatReadReceiptUsersPageOperations {
+  ChatReadReceiptUsersPageSource createReadReceiptUsersPageSource(
+    BaseChannel channel,
+    Message message,
+    MessageReadReceiptStatus status, {
+    required int pageSize,
+  });
+}
+
+class _NexconnChatMessageOperations
+    implements
+        ChatMessageOperations,
+        ChatMessageLookupOperations,
+        ChatReadReceiptUsersPageOperations {
   const _NexconnChatMessageOperations();
+
+  @override
+  Future<Message?> getMessageById(String messageId) async {
+    final completer = Completer<Message?>();
+    unawaited(() async {
+      try {
+        final code = await BaseChannel.getMessageById(
+          GetMessageByIdParams(messageId: messageId),
+          (message, error) {
+            if (error != null && error.code != 0) {
+              if (!completer.isCompleted) {
+                completer.completeError(error);
+              }
+              return;
+            }
+            if (!completer.isCompleted) {
+              completer.complete(message);
+            }
+          },
+        );
+        if (code != 0 && !completer.isCompleted) {
+          completer.completeError(NCError(code: code));
+        }
+      } catch (error) {
+        if (!completer.isCompleted) completer.completeError(error);
+      }
+    }());
+    return completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw NCError(
+        code: -1,
+        message: 'Timed out while resolving message by ID',
+      ),
+    );
+  }
 
   Future<List<Message>> _loadMessagesFromQuery(
     Future<int> Function(OperationHandler<PageData<Message>>) loader,
@@ -296,12 +362,12 @@ class _NexconnChatMessageOperations implements ChatMessageOperations {
     final readUsers = await _loadAllReadReceiptUsers(
       channel,
       messageId,
-      sdk_read_receipt.MessageReadReceiptStatus.read,
+      MessageReadReceiptStatus.read,
     );
     final unreadUsers = await _loadAllReadReceiptUsers(
       channel,
       messageId,
-      sdk_read_receipt.MessageReadReceiptStatus.unread,
+      MessageReadReceiptStatus.unread,
     );
     final resolvedReadCount = info?.readCount ?? readUsers.length;
     final resolvedUnreadCount = info?.unreadCount ?? unreadUsers.length;
@@ -343,55 +409,92 @@ class _NexconnChatMessageOperations implements ChatMessageOperations {
     );
   }
 
+  @override
+  ChatReadReceiptUsersPageSource createReadReceiptUsersPageSource(
+    BaseChannel channel,
+    Message message,
+    MessageReadReceiptStatus status, {
+    required int pageSize,
+  }) {
+    final messageId = message.messageId;
+    if (messageId == null || messageId.isEmpty) {
+      throw NCError(
+        code: 25101,
+        message: 'Message ID is missing; read receipt users cannot be loaded',
+      );
+    }
+    return _NexconnReadReceiptUsersPageSource(
+      BaseChannel.createMessagesReadReceiptUsersQuery(
+        MessagesReadReceiptUsersQueryParams(
+          channelIdentifier: channel.channelIdentifier,
+          messageId: messageId,
+          pageSize: pageSize.clamp(1, 100),
+          isAscending: false,
+          status: status,
+        ),
+      ),
+      isRead: status == MessageReadReceiptStatus.read,
+    );
+  }
+
   Future<ReadReceiptInfo?> _loadReadReceiptInfo(
     BaseChannel channel,
     String messageId,
   ) async {
     final completer = Completer<ReadReceiptInfo?>();
-    final code = await channel.getMessageReadReceiptInfo([messageId], (
-      infos,
-      error,
-    ) {
+    void complete(List<ReadReceiptInfo>? infos, NCError? error) {
+      if (completer.isCompleted) return;
       if (error != null && error.code != 0) {
-        if (!completer.isCompleted) {
-          completer.completeError(error);
-        }
+        completer.completeError(error);
         return;
       }
-      if (!completer.isCompleted) {
-        ReadReceiptInfo? matchedInfo;
-        final candidates = infos ?? const <ReadReceiptInfo>[];
-        for (final info in candidates) {
-          if (info.messageId == messageId) {
-            matchedInfo = info;
-            break;
-          }
+      ReadReceiptInfo? matchedInfo;
+      final candidates = infos ?? const <ReadReceiptInfo>[];
+      for (final info in candidates) {
+        if (info.messageId == messageId) {
+          matchedInfo = info;
+          break;
         }
-        matchedInfo ??= candidates.isNotEmpty ? candidates.first : null;
-        completer.complete(matchedInfo);
       }
-    });
-    if (code != 0 && !completer.isCompleted) {
-      throw NCError(code: code);
+      matchedInfo ??= candidates.isNotEmpty ? candidates.first : null;
+      completer.complete(matchedInfo);
     }
-    return completer.future;
+
+    // The native operation ID and callback are independent delivery paths.
+    // Keep the UI responsive if either path is lost by a bridge/native fault.
+    unawaited(() async {
+      try {
+        final code = await channel.getMessageReadReceiptInfo([
+          messageId,
+        ], complete);
+        if (code != 0) complete(null, NCError(code: code));
+      } catch (error) {
+        complete(null, error is NCError ? error : NCError(message: '$error'));
+      }
+    }());
+    return completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw NCError(
+        code: -1,
+        message: 'Timed out while loading message read receipt info',
+      ),
+    );
   }
 
-  Future<List<sdk_read_receipt.MessageReadReceiptUser>>
-  _loadAllReadReceiptUsers(
+  Future<List<MessageReadReceiptUser>> _loadAllReadReceiptUsers(
     BaseChannel channel,
     String messageId,
-    sdk_read_receipt.MessageReadReceiptStatus status,
+    MessageReadReceiptStatus status,
   ) async {
     final query = BaseChannel.createMessagesReadReceiptUsersQuery(
-      sdk_read_receipt.MessagesReadReceiptUsersQueryParams(
+      MessagesReadReceiptUsersQueryParams(
         channelIdentifier: channel.channelIdentifier,
         messageId: messageId,
         pageSize: 50,
         status: status,
       ),
     );
-    final users = <sdk_read_receipt.MessageReadReceiptUser>[];
+    final users = <MessageReadReceiptUser>[];
     while (true) {
       final page = await _loadReadReceiptUsersPage(query);
       users.addAll(page.data);
@@ -402,32 +505,103 @@ class _NexconnChatMessageOperations implements ChatMessageOperations {
     return users;
   }
 
-  Future<PageResult<sdk_read_receipt.MessageReadReceiptUser>>
-  _loadReadReceiptUsersPage(
-    sdk_read_receipt.MessagesReadReceiptUsersQuery query,
+  Future<PageResult<MessageReadReceiptUser>> _loadReadReceiptUsersPage(
+    MessagesReadReceiptUsersQuery query,
   ) async {
-    final completer =
-        Completer<PageResult<sdk_read_receipt.MessageReadReceiptUser>>();
-    final code = await query.loadNextPage((page, error) {
+    final completer = Completer<PageResult<MessageReadReceiptUser>>();
+    void complete(PageResult<MessageReadReceiptUser>? page, NCError? error) {
+      if (completer.isCompleted) return;
       if (error != null && error.code != 0) {
-        if (!completer.isCompleted) {
-          completer.completeError(error);
-        }
+        completer.completeError(error);
         return;
       }
-      if (!completer.isCompleted) {
-        completer.complete(
-          page ??
-              const PageResult<sdk_read_receipt.MessageReadReceiptUser>(
-                data: <sdk_read_receipt.MessageReadReceiptUser>[],
-                totalCount: 0,
-              ),
-        );
-      }
-    });
-    if (code != 0 && !completer.isCompleted) {
-      throw NCError(code: code);
+      completer.complete(
+        page ??
+            const PageResult<MessageReadReceiptUser>(
+              data: <MessageReadReceiptUser>[],
+              totalCount: 0,
+            ),
+      );
     }
-    return completer.future;
+
+    unawaited(() async {
+      try {
+        final code = await query.loadNextPage(complete);
+        if (code != 0) complete(null, NCError(code: code));
+      } catch (error) {
+        complete(null, error is NCError ? error : NCError(message: '$error'));
+      }
+    }());
+    return completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw NCError(
+        code: -1,
+        message: 'Timed out while loading read receipt users',
+      ),
+    );
+  }
+}
+
+class _NexconnReadReceiptUsersPageSource
+    implements ChatReadReceiptUsersPageSource {
+  final MessagesReadReceiptUsersQuery _query;
+  final bool isRead;
+
+  _NexconnReadReceiptUsersPageSource(this._query, {required this.isRead});
+
+  @override
+  bool get hasMore => _query.hasMore;
+
+  @override
+  Future<ChatReadReceiptUsersPage> loadNextPage() async {
+    final completer = Completer<PageResult<MessageReadReceiptUser>>();
+    void complete(PageResult<MessageReadReceiptUser>? page, NCError? error) {
+      if (completer.isCompleted) return;
+      if (error != null && error.code != 0) {
+        completer.completeError(error);
+        return;
+      }
+      completer.complete(
+        page ??
+            const PageResult<MessageReadReceiptUser>(
+              data: <MessageReadReceiptUser>[],
+              totalCount: 0,
+            ),
+      );
+    }
+
+    unawaited(() async {
+      try {
+        final code = await _query.loadNextPage(complete);
+        if (code != 0) complete(null, NCError(code: code));
+      } catch (error) {
+        complete(null, error is NCError ? error : NCError(message: '$error'));
+      }
+    }());
+    final page = await completer.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw NCError(
+        code: -1,
+        message: 'Timed out while loading read receipt users',
+      ),
+    );
+    final users = page.data
+        .map(
+          (user) => ChatReadReceiptUserEntry(
+            userId: user.userId ?? '',
+            title: user.userId?.isNotEmpty == true
+                ? user.userId!
+                : 'Unknown user',
+            timestamp: user.timestamp,
+            isRead: isRead,
+            payload: user,
+          ),
+        )
+        .toList(growable: false);
+    return ChatReadReceiptUsersPage(
+      users: users,
+      totalCount: page.totalCount,
+      hasMore: users.isNotEmpty && _query.hasMore,
+    );
   }
 }

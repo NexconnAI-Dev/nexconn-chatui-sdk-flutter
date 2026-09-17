@@ -3,6 +3,16 @@ part of '../message_bubble.dart';
 extension _MessageBubbleLayout on _MessageBubbleBase {
   Widget _buildWithProfile(BuildContext context, ChatProfileInfo? profile) {
     final customBuilder = _customBubbleBuilder;
+    if (this is _InformationNotificationMessageBubble &&
+        customBuilder == null) {
+      final style = config.bubbleConfig.receivedStyle;
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: resolvedVerticalPadding(extraOuterVerticalPadding),
+        ),
+        child: buildMessageContent(context, style),
+      );
+    }
     if (this is _GroupNotificationMessageBubble && customBuilder == null) {
       return Padding(
         padding: EdgeInsets.symmetric(
@@ -132,7 +142,11 @@ extension _MessageBubbleLayout on _MessageBubbleBase {
                     ),
                   ),
                 _bubbleContentRow(context, style, customBuilder, sent),
-                if (!withoutStatusLine) _statusLine(context, sent),
+                if (_messageEditStatusAppend(context) case final status?)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: status,
+                  ),
               ],
             ),
           ),
@@ -202,7 +216,8 @@ extension _MessageBubbleLayout on _MessageBubbleBase {
     }
     return Row(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      // 与气泡底边平行对齐（对齐 IMKit 已读状态 V5 布局）。
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (sent) ...[
           statusIndicator,

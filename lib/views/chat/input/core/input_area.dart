@@ -37,6 +37,13 @@ extension _MessageInputInputArea on _MessageInputWidgetState {
           scrollController: _textScrollController,
           minLines: 1,
           maxLines: widget.config.maxLines,
+          maxLength: 5000,
+          buildCounter: (
+            context, {
+            required currentLength,
+            required isFocused,
+            required maxLength,
+          }) => null,
           keyboardType: TextInputType.multiline,
           textInputAction: TextInputAction.send,
           onEditingComplete: () {},
@@ -49,8 +56,11 @@ extension _MessageInputInputArea on _MessageInputWidgetState {
           onTap: () => input.setMode(MessageInputMode.text),
           onChanged: (value) => _handleDraftChanged(context, input, value),
           onSubmitted: (_) {
-            if (input.hasDraft) {
+            if (_canSubmitText(input, chat)) {
               _sendText(context, input, chat);
+            } else if (input.isEditing &&
+                !_isActiveEditAvailable(input, chat)) {
+              _showEditingUnavailable(context);
             } else {
               _showEmptyTextWarning(context, input);
             }

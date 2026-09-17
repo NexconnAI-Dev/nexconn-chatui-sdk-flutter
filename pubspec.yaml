@@ -1,6 +1,6 @@
 name: ai_nexconn_chatui_plugin
 description: A Flutter UI package for Nexconn Chat conversations and messages.
-version: 26.2.8
+version: 26.2.9
 homepage: https://github.com/NexconnAI-Dev/nexconn-chatui-sdk-flutter
 
 environment:
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ai_nexconn_chat_plugin: ^26.2.8
+  ai_nexconn_chat_plugin: 26.2.9
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
@@ -43,7 +43,7 @@ dependencies:
   xml: ^6.5.0
   share_plus: ^12.0.0
   mime: ^2.0.0
-  rongcloud_im_wrapper_plugin: ^5.32.8
+  rongcloud_im_wrapper_plugin: 5.44.0
   video_player_media_kit: ^2.0.0
   media_kit_libs_android_video: ^1.3.8
 

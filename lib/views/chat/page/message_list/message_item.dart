@@ -42,7 +42,17 @@ extension _MessageListMessageItem on _MessageListWidgetState {
       cursor -= 1;
     }
     if (cursor < provider.messages.length) {
-      return _messageItemContent(context, provider, cursor);
+      final messageIndex = cursor;
+      return Selector<ChatProvider, Message?>(
+        selector: (_, currentProvider) {
+          final messages = currentProvider.messages;
+          return messageIndex < messages.length ? messages[messageIndex] : null;
+        },
+        builder: (context, message, _) {
+          if (message == null) return const SizedBox.shrink();
+          return _messageItemContent(context, provider, messageIndex, message);
+        },
+      );
     }
     cursor -= provider.messages.length;
     if (_hasOutgoingAppendReserve) {
@@ -64,18 +74,15 @@ extension _MessageListMessageItem on _MessageListWidgetState {
     BuildContext context,
     ChatProvider provider,
     int messageIndex,
+    Message message,
   ) {
-    final message = provider.messages[messageIndex];
     final previousMessage = messageIndex > 0
         ? provider.messages[messageIndex - 1]
         : null;
     final messageKey = _messageKey(message);
     final itemKey = _messageItemKeys.putIfAbsent(messageKey, GlobalKey.new);
-    final isLastMessage = messageIndex == provider.messages.length - 1;
-    final isUnreadMentioned = provider.unreadMentionedMessages.any(
-      (item) => _isSameMessage(item, message),
-    );
-    final shouldTrackVisibility = isLastMessage || isUnreadMentioned;
+    // Track every message so read-receipt V5 is only submitted after the
+    // received message actually enters the viewport.
     final child =
         widget.messageBuilder?.call(context, message, widget.config) ??
         MessageBubble(
@@ -108,14 +115,18 @@ extension _MessageListMessageItem on _MessageListWidgetState {
               widget.onMessageAvatarLongPress?.call(message),
         );
     final keyedChild = KeyedSubtree(key: itemKey, child: child);
-    if (!shouldTrackVisibility) {
-      _messageVisibleFractions.remove(messageKey);
-      return keyedChild;
-    }
     return VisibilityDetector(
       key: Key('message_visibility_$messageKey'),
       onVisibilityChanged: (info) {
         _messageVisibleFractions[messageKey] = info.visibleFraction;
+        if (info.visibleFraction >= 0.1) {
+          unawaited(
+            provider.submitReadReceiptForVisible(
+              message,
+              visibleFraction: info.visibleFraction,
+            ),
+          );
+        }
         if (info.visibleFraction >= 0.5) {
           provider.removeUnreadMentionedMessage(message);
         }

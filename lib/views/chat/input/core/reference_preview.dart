@@ -1,6 +1,23 @@
 part of '../message_input_widget.dart';
 
 extension _MessageInputReferencePreview on _MessageInputWidgetState {
+  ReferenceMessage? _editingReferenceMessage(
+    ChatProvider chat,
+    MessageInputProvider input,
+  ) {
+    final editing = input.editingMessage;
+    if (editing is! ReferenceMessage) return null;
+    final id = editing.messageId;
+    if (id != null && id.isNotEmpty) {
+      for (final message in chat.messages) {
+        if (message.messageId == id && message is ReferenceMessage) {
+          return message;
+        }
+      }
+    }
+    return editing;
+  }
+
   Widget _buildReferencePreview(
     Message message,
     MessageInputProvider input,
@@ -19,6 +36,7 @@ extension _MessageInputReferencePreview on _MessageInputWidgetState {
           input,
           theme,
           _referenceSenderName(message, snapshot.data),
+          onClear: input.clearReferenceMessage,
         ),
       );
     }
@@ -27,29 +45,83 @@ extension _MessageInputReferencePreview on _MessageInputWidgetState {
       input,
       theme,
       _referenceSenderName(message, null),
+      onClear: input.clearReferenceMessage,
     );
+  }
+
+  Widget _buildEditingReferencePreview(
+    ReferenceMessage message,
+    MessageInputProvider input,
+    NexconnThemeTokens theme,
+  ) {
+    final referenced = message.referenceMsg;
+    final displayMessage = referenced ?? message;
+    final status = _editingReferenceStatus(message);
+    var summary = referenceMessageContent(
+      referenced,
+      localizations: context.chatUIL10n,
+      isDeleted: status == ReferenceMessageStatus.deleted,
+      isRecalled: status == ReferenceMessageStatus.recalled,
+    );
+    if (status == ReferenceMessageStatus.modified && summary.isNotEmpty) {
+      summary = '$summary (${context.chatUIL10n.messageEdited})';
+    }
+    final profileProvider = widget.profileProvider;
+    if (profileProvider != null) {
+      return FutureBuilder<ChatProfileInfo?>(
+        future: profileProvider(
+          _referenceProfileChannel(displayMessage),
+          message: displayMessage,
+        ),
+        initialData: _profileFromReferenceMessage(displayMessage),
+        builder: (context, snapshot) => _buildReferencePreviewWithName(
+          displayMessage,
+          input,
+          theme,
+          _referenceSenderName(displayMessage, snapshot.data),
+          summaryOverride: summary,
+          previewKey: const ValueKey('message-input-edit-reference-preview'),
+          allowCustomBuilder: false,
+        ),
+      );
+    }
+    return _buildReferencePreviewWithName(
+      displayMessage,
+      input,
+      theme,
+      _referenceSenderName(displayMessage, null),
+      summaryOverride: summary,
+      previewKey: const ValueKey('message-input-edit-reference-preview'),
+      allowCustomBuilder: false,
+    );
+  }
+
+  ReferenceMessageStatus _editingReferenceStatus(ReferenceMessage message) {
+    try {
+      return message.referenceMessageStatus ??
+          ReferenceMessageStatus.defaultValue;
+    } on NoSuchMethodError {
+      return ReferenceMessageStatus.defaultValue;
+    }
   }
 
   Widget _buildReferencePreviewWithName(
     Message message,
     MessageInputProvider input,
     NexconnThemeTokens theme,
-    String senderName,
-  ) {
-    final summary = referenceMessageContent(
-      message,
-      localizations: context.chatUIL10n,
-    );
+    String senderName, {
+    String? summaryOverride,
+    VoidCallback? onClear,
+    Key? previewKey,
+    bool allowCustomBuilder = true,
+  }) {
+    final summary =
+        summaryOverride ??
+        referenceMessageContent(message, localizations: context.chatUIL10n);
     final previewConfig = widget.config.referencePreviewConfig;
     final customBuilder = previewConfig.builder;
-    if (customBuilder != null) {
-      return customBuilder(
-        context,
-        message,
-        senderName,
-        summary,
-        input.clearReferenceMessage,
-      );
+    if (allowCustomBuilder && customBuilder != null && onClear != null) {
+      return customBuilder(context, message, senderName, summary, onClear);
     }
     final imagePreview = message is ImageMessage
         ? _referenceImagePreview(message, theme)
@@ -58,6 +130,7 @@ extension _MessageInputReferencePreview on _MessageInputWidgetState {
     final title =
         '| ${context.chatUIL10n.messageInputReplyTo(senderName, titleSummary)}';
     return Container(
+      key: previewKey,
       width: double.infinity,
       height: imagePreview == null ? kInputQuotePreviewHeight : null,
       constraints: imagePreview == null
@@ -89,24 +162,25 @@ extension _MessageInputReferencePreview on _MessageInputWidgetState {
                     ],
                   ),
           ),
-          Tooltip(
-            message: context.chatUIL10n.messageInputCancelReplyTooltip,
-            child: GestureDetector(
-              onTap: input.clearReferenceMessage,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child:
-                    previewConfig.closeIcon ??
-                    ChatUIAsset.image(
-                      'NexconnLightIcon/Close.png',
-                      width: kInputQuotePreviewCloseIconSize,
-                      height: kInputQuotePreviewCloseIconSize,
-                      color: theme.secondaryTextColor,
-                    ),
+          if (onClear != null)
+            Tooltip(
+              message: context.chatUIL10n.messageInputCancelReplyTooltip,
+              child: GestureDetector(
+                onTap: onClear,
+                behavior: HitTestBehavior.opaque,
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child:
+                      previewConfig.closeIcon ??
+                      ChatUIAsset.image(
+                        'NexconnLightIcon/Close.png',
+                        width: kInputQuotePreviewCloseIconSize,
+                        height: kInputQuotePreviewCloseIconSize,
+                        color: theme.secondaryTextColor,
+                      ),
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

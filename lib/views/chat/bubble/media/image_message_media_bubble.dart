@@ -22,16 +22,7 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
     final size = _imagePreviewSize(media);
     final cacheSize = _previewCacheSize(context, size);
     final preferAnimation = media is GIFMessage;
-    final thumbnailWidget =
-        thumbnailBase64 != null && thumbnailBase64.isNotEmpty
-        ? _DeferredBase64Thumbnail(
-            thumbnailBase64: thumbnailBase64,
-            cacheSize: cacheSize,
-            fit: previewConfig.fit,
-            placeholder: _mediaLoadingPlaceholder(style),
-          )
-        : null;
-    final child = hasUsableLocalPreview
+    Widget buildFullPreview() => hasUsableLocalPreview
         ? _previewImage(
             context,
             localPath!,
@@ -40,7 +31,7 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
             cacheSize: cacheSize,
             preferAnimation: preferAnimation,
           )
-        : media is ImageMessage && previewPath != null && previewPath.isNotEmpty
+        : previewPath != null && previewPath.isNotEmpty
         ? _previewImage(
             context,
             previewPath,
@@ -48,20 +39,17 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
             fit: previewConfig.fit,
             cacheSize: cacheSize,
             preferAnimation: preferAnimation,
-            loadingPlaceholder: thumbnailWidget,
-            errorFallback: thumbnailWidget,
           )
-        : thumbnailWidget ??
-              (previewPath != null && previewPath.isNotEmpty
-                  ? _previewImage(
-                      context,
-                      previewPath,
-                      style,
-                      fit: previewConfig.fit,
-                      cacheSize: cacheSize,
-                      preferAnimation: preferAnimation,
-                    )
-                  : _mediaLoadingPlaceholder(style));
+        : _mediaLoadingPlaceholder(style);
+    final child = thumbnailBase64 != null && thumbnailBase64.isNotEmpty
+        ? _DeferredBase64Thumbnail(
+            thumbnailBase64: thumbnailBase64,
+            cacheSize: cacheSize,
+            fit: previewConfig.fit,
+            loadingPlaceholder: _mediaLoadingPlaceholder(style),
+            fallbackBuilder: buildFullPreview,
+          )
+        : buildFullPreview();
     return GestureDetector(
       key: MessageBubble.mediaPreviewContentKey,
       behavior: HitTestBehavior.opaque,
@@ -92,6 +80,17 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
     MediaMessage media,
     MessageStyleConfig style,
   ) {
+    final gif = media is GIFMessage ? media : null;
+    if (gif != null && (_gifDataSize(gif) ?? 0) > 1024 * 1024) {
+      final provider = _maybeChatProvider(context);
+      return _LargeGifDownloadBubble(
+        gif: gif,
+        provider: provider,
+        style: style,
+        size: _imagePreviewSize(media),
+        onPreview: () => _handleMediaPreviewTap(context, media),
+      );
+    }
     final previewConfig = config.bubbleConfig.imagePreviewConfig;
     final localPath = _readNullableString(() => media.localPath);
     final remotePath = _readNullableString(() => media.remotePath);
@@ -133,6 +132,14 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
     );
   }
 
+  int? _gifDataSize(GIFMessage gif) {
+    try {
+      return gif.dataSize;
+    } on NoSuchMethodError {
+      return null;
+    }
+  }
+
   Widget _referencedImagePreview(
     BuildContext context,
     ImageMessage image,
@@ -163,7 +170,8 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
             thumbnailBase64: thumbnailBase64,
             cacheSize: cacheSize,
             fit: BoxFit.cover,
-            placeholder: previewWidget,
+            loadingPlaceholder: _mediaLoadingPlaceholder(style),
+            fallbackBuilder: () => previewWidget,
           )
         : previewWidget;
     return Align(
@@ -272,7 +280,134 @@ extension _MessageBubbleImageMessageMediaBubble on _MessageBubbleBase {
         : 1.0;
     return ChatUIImageUtil.referenceThumbnailDisplaySizeForRatio(ratio);
   }
+}
 
+class _LargeGifDownloadBubble extends StatefulWidget {
+  final GIFMessage gif;
+  final ChatProvider? provider;
+  final MessageStyleConfig style;
+  final Size size;
+  final VoidCallback onPreview;
+
+  const _LargeGifDownloadBubble({
+    required this.gif,
+    required this.provider,
+    required this.style,
+    required this.size,
+    required this.onPreview,
+  });
+
+  @override
+  State<_LargeGifDownloadBubble> createState() =>
+      _LargeGifDownloadBubbleState();
+}
+
+class _LargeGifDownloadBubbleState extends State<_LargeGifDownloadBubble> {
+  bool _downloading = false;
+  double? _progress;
+  Object? _error;
+
+  bool get _hasLocal => widget.gif.localPath?.isNotEmpty == true;
+
+  Future<void> _download() async {
+    final provider = widget.provider;
+    if (provider == null || _downloading) return;
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+      _error = null;
+    });
+    try {
+      await provider.downloadMediaMessage(
+        widget.gif,
+        onDownloading: (_, progress) {
+          if (!mounted) return;
+          setState(() => _progress = progress.clamp(0, 100) / 100);
+        },
+      );
+      if (!mounted) return;
+      setState(() {
+        _downloading = false;
+        _progress = null;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _downloading = false;
+        _progress = null;
+        _error = error;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final previewConfig = context
+        .findAncestorWidgetOfExactType<MessageBubble>()
+        ?.config
+        .bubbleConfig
+        .imagePreviewConfig;
+    final borderRadius = previewConfig?.borderRadius ?? 8;
+    final fit = previewConfig?.fit ?? BoxFit.cover;
+    final child = _hasLocal
+        ? Image.file(
+            File(widget.gif.localPath!),
+            fit: fit,
+            errorBuilder: (_, __, ___) => _fallback(context),
+          )
+        : _fallback(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: _hasLocal ? widget.onPreview : null,
+      child: Semantics(
+        button: true,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            border: Border.all(color: const Color(0x14000000), width: 0.5),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: SizedBox(
+              width: widget.size.width,
+              height: widget.size.height,
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _fallback(BuildContext context) {
+    final label = _error != null ? '下载失败，点击重试' : 'GIF 过大，点击下载';
+    return ColoredBox(
+      color: widget.style.backgroundColor,
+      child: Center(
+        child: InkWell(
+          key: MessageBubble.gifDownloadKey,
+          onTap: _downloading ? null : _download,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: _downloading
+                ? SizedBox.square(
+                    dimension: 24,
+                    child: CircularProgressIndicator(
+                      value: _progress,
+                      strokeWidth: 2,
+                      color: widget.style.textColor,
+                    ),
+                  )
+                : Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: widget.style.textColor),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _DeferredBase64Thumbnail extends StatefulWidget {
@@ -280,13 +415,15 @@ class _DeferredBase64Thumbnail extends StatefulWidget {
     required this.thumbnailBase64,
     required this.cacheSize,
     required this.fit,
-    required this.placeholder,
+    required this.loadingPlaceholder,
+    required this.fallbackBuilder,
   });
 
   final String thumbnailBase64;
   final _ImageCacheSize cacheSize;
   final BoxFit fit;
-  final Widget placeholder;
+  final Widget loadingPlaceholder;
+  final Widget Function() fallbackBuilder;
 
   @override
   State<_DeferredBase64Thumbnail> createState() =>
@@ -331,7 +468,9 @@ class _DeferredBase64ThumbnailState extends State<_DeferredBase64Thumbnail> {
       builder: (context, snapshot) {
         final thumbnail = snapshot.data;
         if (thumbnail == null) {
-          return widget.placeholder;
+          return snapshot.connectionState == ConnectionState.done
+              ? widget.fallbackBuilder()
+              : widget.loadingPlaceholder;
         }
         return Image(
           image: ResizeImage.resizeIfNeeded(
@@ -340,6 +479,7 @@ class _DeferredBase64ThumbnailState extends State<_DeferredBase64Thumbnail> {
             MemoryImage(thumbnail),
           ),
           fit: widget.fit,
+          errorBuilder: (_, __, ___) => widget.fallbackBuilder(),
         );
       },
     );

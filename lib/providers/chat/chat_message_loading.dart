@@ -40,15 +40,19 @@ extension _ChatProviderMessageLoading on ChatProvider {
         _hasResolvedInitialLoad = true;
         _lastError = error;
         _purgeLegacyPlaceholderMessages();
-        final data = (page?.data ?? const <Message>[])
+        final queriedData = (page?.data ?? const <Message>[])
             .where((message) => !_isLegacyPlaceholderMessage(message))
             .toList(growable: false);
         if (error == null) {
+          final data = _mergeLatestModifiedMessages(queriedData);
           _hasMore = _query?.hasMore ?? data.length >= _effectivePageSize;
           _syncLoadedMessagesDisplayState(data);
           _messages = reset
               ? data.reversed.toList()
               : [...data.reversed, ..._messages];
+          _markMessageCachesDirty();
+          unawaited(_syncReadReceipts(data));
+          unawaited(_refreshReferenceMessages(data, force: reset));
         }
         _safeNotifyListeners();
         completeLoad();

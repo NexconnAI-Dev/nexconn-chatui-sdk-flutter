@@ -6,6 +6,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart'
     hide Message;
 
 import '../utils/message_content_util.dart';
+import 'read_receipt_repository.dart';
 
 /// Receives messages after EngineProvider accepts SDK events.
 typedef NexconnAsyncMessageReceivedListener =
@@ -16,6 +17,12 @@ typedef NexconnLocalNotificationFilter = bool Function(Message message);
 
 /// Returns the server-to-local clock delta in milliseconds.
 typedef NexconnServerTimeDeltaResolver = FutureOr<int> Function();
+
+/// Returns application-level settings reported by the SDK.
+typedef NexconnAppSettingsResolver = FutureOr<AppSettings?> Function();
+
+const Duration _serverTimeDeltaResolverTimeout = Duration(seconds: 5);
+const Duration _appSettingsResolverTimeout = Duration(seconds: 15);
 
 /// Initializes NCEngine, manages connection state, and bridges global SDK events into ChatUI.
 class EngineProvider with ChangeNotifier {
@@ -39,6 +46,26 @@ class EngineProvider with ChangeNotifier {
   /// Emits deleted messages that open chat pages should remove.
   final ValueNotifier<List<Message>?> deletedMessagesNotifier =
       ValueNotifier<List<Message>?>(null);
+
+  /// Emits messages changed by message-edit synchronization.
+  final ValueNotifier<List<Message>?> modifiedMessagesNotifier =
+      ValueNotifier<List<Message>?>(null);
+
+  /// Emits when offline message-edit synchronization has completed.
+  final ValueNotifier<int> modifiedMessageSyncCompletedNotifier =
+      ValueNotifier<int>(0);
+
+  /// Emits V5 read-receipt responses for outgoing messages.
+  final ValueNotifier<List<MessageReadReceiptResponse>?>
+  messageReceiptResponsesNotifier =
+      ValueNotifier<List<MessageReadReceiptResponse>?>(null);
+
+  /// Emits the server-reported read-receipt protocol capability.
+  final ValueNotifier<ReadReceiptVersion?> readReceiptVersionNotifier =
+      ValueNotifier<ReadReceiptVersion?>(null);
+
+  /// Increments whenever the active engine session is replaced or invalidated.
+  final ValueNotifier<int> sessionGenerationNotifier = ValueNotifier<int>(0);
 
   /// Emits typing status changes from the SDK.
   final ValueNotifier<TypingStatusChangedEvent?> typingStatusNotifier =
@@ -65,21 +92,32 @@ class EngineProvider with ChangeNotifier {
   final Set<NexconnLocalNotificationFilter> _localNotificationFilters =
       <NexconnLocalNotificationFilter>{};
   final NexconnServerTimeDeltaResolver _serverTimeDeltaResolver;
+  final NexconnAppSettingsResolver _appSettingsResolver;
+  late final NexconnReadReceiptV5Repository readReceiptRepository;
   final Map<String, Message> _failedMessages = <String, Message>{};
 
   String _currentUserId = '';
   bool _acceptingEngineEvents = false;
+  bool _disposed = false;
   int _connectionGeneration = 0;
+  int _sessionGeneration = 0;
   bool _destroyEngineBeforeNextInitialize = false;
   int _totalUnreadCount = 0;
   bool _enableLocalNotification = false;
   bool _localNotificationReady = false;
   int? _serverTimeDelta;
+  int? _messageModifiableMinutes;
   FlutterLocalNotificationsPlugin? _localNotifications;
   Timer? _channelRefreshThrottleTimer;
+  Future<void>? _appSettingsFuture;
+  int? _appSettingsFutureGeneration;
+  String? _appSettingsFutureUserId;
 
   /// Current connected user id.
   String get currentUserId => _currentUserId;
+
+  /// Identity of the current engine session for guarding asynchronous work.
+  int get sessionGeneration => _sessionGeneration;
 
   /// Total unread count tracked by ChatUI.
   int get totalUnreadCount => _totalUnreadCount;
@@ -92,6 +130,41 @@ class EngineProvider with ChangeNotifier {
 
   /// Server-to-local clock delta in milliseconds.
   int? get serverTimeDelta => _serverTimeDelta;
+
+  /// Server-reported read-receipt protocol capability, when available.
+  ReadReceiptVersion? get readReceiptVersion =>
+      readReceiptVersionNotifier.value;
+
+  /// Waits briefly for the initial app-settings response before a message send.
+  Future<bool> waitForReadReceiptV5(ChannelType channelType) async {
+    if (channelType != ChannelType.direct && channelType != ChannelType.group) {
+      return false;
+    }
+    if (readReceiptVersion == null) {
+      try {
+        await refreshAppSettings().timeout(const Duration(seconds: 1));
+      } catch (_) {
+        return false;
+      }
+    }
+    return readReceiptVersion == ReadReceiptVersion.version5;
+  }
+
+  /// Server-reported message edit window in minutes.
+  int? get messageModifiableMinutes => _messageModifiableMinutes;
+
+  /// Waits for the server time and message-edit window required to validate
+  /// persisted edit drafts without treating a pending refresh as unsupported.
+  Future<bool> waitForMessageEditSettings() async {
+    if ((_messageModifiableMinutes ?? 0) <= 0 || _serverTimeDelta == null) {
+      try {
+        await refreshAppSettings();
+      } catch (_) {
+        return false;
+      }
+    }
+    return (_messageModifiableMinutes ?? 0) > 0 && _serverTimeDelta != null;
+  }
 
   /// Current server-adjusted timestamp in milliseconds.
   int get serverNowMilliseconds =>
@@ -118,8 +191,13 @@ class EngineProvider with ChangeNotifier {
   bool get isAcceptingEngineEvents => _canAcceptEngineEvents;
 
   @visibleForTesting
+  void updateReadReceiptVersionForTesting(ReadReceiptVersion? version) {
+    readReceiptVersionNotifier.value = version;
+  }
+
+  @visibleForTesting
   void resetSessionStateForTesting() {
-    _connectionGeneration++;
+    _advanceConnectionGeneration();
     _acceptingEngineEvents = false;
     _clearSessionState(clearCurrentUser: true, resetConnectionStatus: true);
     notifyListeners();
@@ -137,11 +215,44 @@ class EngineProvider with ChangeNotifier {
   EngineProvider({
     String currentUserId = '',
     NexconnServerTimeDeltaResolver? serverTimeDeltaResolver,
+    NexconnAppSettingsResolver? appSettingsResolver,
+    NexconnReadReceiptInfoQuery? readReceiptInfoQuery,
   }) : _serverTimeDeltaResolver =
            serverTimeDeltaResolver ?? NCEngine.getServerTimeDelta,
+       _appSettingsResolver =
+           appSettingsResolver ??
+           (() {
+             if (!NCEngine.isInitialized) {
+               throw StateError('NCEngine is not initialized');
+             }
+             return NCEngine.getAppSettings();
+           }),
        _currentUserId = currentUserId,
        _acceptingEngineEvents = currentUserId.isNotEmpty {
+    readReceiptRepository = NexconnReadReceiptV5Repository(
+      currentUserId: currentUserId,
+      connectionStatus: connectionStatus,
+      version: readReceiptVersion,
+      query: readReceiptInfoQuery,
+    );
+    connectionStatusNotifier.addListener(_syncReadReceiptConnection);
+    readReceiptVersionNotifier.addListener(_syncReadReceiptCapability);
+    messageReceiptResponsesNotifier.addListener(_syncReadReceiptResponses);
     _bindHandlers();
+  }
+
+  void _syncReadReceiptConnection() {
+    readReceiptRepository.updateConnectionStatus(connectionStatus);
+  }
+
+  void _syncReadReceiptCapability() {
+    readReceiptRepository.updateCapability(readReceiptVersion);
+  }
+
+  void _syncReadReceiptResponses() {
+    readReceiptRepository.handleResponses(
+      messageReceiptResponsesNotifier.value,
+    );
   }
 
   /// Initializes NCEngine and binds ChatUI event handlers.
@@ -159,11 +270,11 @@ class EngineProvider with ChangeNotifier {
     ConnectParams params, {
     OperationHandler<String>? handler,
   }) async {
-    final generation = ++_connectionGeneration;
+    final generation = _advanceConnectionGeneration();
     _clearSessionState(clearCurrentUser: true);
     _acceptingEngineEvents = false;
     notifyListeners();
-    NCEngine.engine.setModuleName("nexconnchatuiflutter", "26.2.8");
+    NCEngine.engine.setModuleName("nexconnchatuiflutter", "26.2.9");
     final code = await NCEngine.connect(params, (userId, error) {
       if (generation != _connectionGeneration) {
         return;
@@ -172,7 +283,11 @@ class EngineProvider with ChangeNotifier {
       final isConnected = errorCode == 0 || errorCode == 34001;
       if (isConnected) {
         if (userId != null && userId.isNotEmpty) {
-          _currentUserId = userId;
+          if (_currentUserId != userId) {
+            _currentUserId = userId;
+            readReceiptRepository.updateAccount(userId);
+            _advanceSessionGeneration();
+          }
         }
         _acceptingEngineEvents = true;
         notifyListeners();
@@ -198,7 +313,7 @@ class EngineProvider with ChangeNotifier {
 
   /// Disconnects NCEngine and clears ChatUI session state.
   Future<int> disconnect({bool disablePush = false}) {
-    _connectionGeneration++;
+    _advanceConnectionGeneration();
     _acceptingEngineEvents = false;
     _destroyEngineBeforeNextInitialize = true;
     _clearSessionState(clearCurrentUser: true, resetConnectionStatus: true);
@@ -234,7 +349,12 @@ class EngineProvider with ChangeNotifier {
         _acceptingEngineEvents == acceptingEngineEvents) {
       return;
     }
+    if (_currentUserId != userId) {
+      _advanceSessionGeneration();
+      _invalidateAppSettings();
+    }
     _currentUserId = userId;
+    readReceiptRepository.updateAccount(userId);
     _acceptingEngineEvents = acceptingEngineEvents;
     notifyListeners();
   }
@@ -478,20 +598,76 @@ class EngineProvider with ChangeNotifier {
   }
 
   /// Refreshes app-wide settings such as server time delta.
-  Future<void> refreshAppSettings() async {
+  Future<void> refreshAppSettings() {
+    final generation = _connectionGeneration;
+    final userId = _currentUserId;
+    final inFlight = _appSettingsFuture;
+    if (inFlight != null &&
+        _appSettingsFutureGeneration == generation &&
+        _appSettingsFutureUserId == userId) {
+      return inFlight;
+    }
+    late final Future<void> future;
+    future = _refreshAppSettings(generation, userId).whenComplete(() {
+      if (identical(_appSettingsFuture, future)) {
+        _appSettingsFuture = null;
+        _appSettingsFutureGeneration = null;
+        _appSettingsFutureUserId = null;
+      }
+    });
+    _appSettingsFuture = future;
+    _appSettingsFutureGeneration = generation;
+    _appSettingsFutureUserId = userId;
+    return future;
+  }
+
+  Future<void> _refreshAppSettings(int generation, String userId) {
+    return Future.wait<void>([
+      _refreshServerTimeDelta(generation, userId),
+      _refreshServerAppSettings(generation, userId),
+    ]);
+  }
+
+  Future<void> _refreshServerTimeDelta(int generation, String userId) async {
     try {
-      final serverTimeDelta = await Future<int>.value(
+      final value = await Future<int>.value(
         _serverTimeDeltaResolver(),
-      );
-      if (_serverTimeDelta == serverTimeDelta) {
+      ).timeout(_serverTimeDeltaResolverTimeout);
+      if (!_isAppSettingsRefreshCurrent(generation, userId) ||
+          _serverTimeDelta == value) {
         return;
       }
-      _serverTimeDelta = serverTimeDelta;
+      _serverTimeDelta = value;
       notifyListeners();
     } catch (_) {
-      // Keep the previous delta; before the first successful refresh this
-      // intentionally falls back to the local clock.
+      // Keep the previous delta when the SDK cannot resolve it before deadline.
     }
+  }
+
+  Future<void> _refreshServerAppSettings(int generation, String userId) async {
+    try {
+      final settings = await Future<AppSettings?>.value(
+        _appSettingsResolver(),
+      ).timeout(_appSettingsResolverTimeout);
+      if (!_isAppSettingsRefreshCurrent(generation, userId)) return;
+      final version = settings?.readReceiptVersion;
+      final minutes = settings?.messageModifiableMinutes;
+      if (readReceiptVersionNotifier.value == version &&
+          _messageModifiableMinutes == minutes) {
+        return;
+      }
+      readReceiptVersionNotifier.value = version;
+      _messageModifiableMinutes = minutes;
+      notifyListeners();
+    } catch (_) {
+      // Settings are supplementary; retain the last successful capability.
+    }
+  }
+
+  bool _isAppSettingsRefreshCurrent(int generation, String userId) {
+    return !_disposed &&
+        generation == _connectionGeneration &&
+        userId == _currentUserId;
   }
 
   @visibleForTesting
@@ -509,17 +685,31 @@ class EngineProvider with ChangeNotifier {
         }
         notifyMessagesDeleted(event.messages);
       },
+      onMessagesModified: (event) {
+        if (gateEngineEvents && !_canAcceptEngineEvents) return;
+        modifiedMessagesNotifier.value = event.messages;
+        notifyChannelNeedsRefresh();
+        notifyListeners();
+      },
+      onModifiedMessageSyncCompleted: (_) {
+        if (gateEngineEvents && !_canAcceptEngineEvents) return;
+        modifiedMessageSyncCompletedNotifier.value++;
+        notifyChannelNeedsRefresh();
+        notifyListeners();
+      },
       onOfflineMessageSyncCompleted: (_) {
         if (gateEngineEvents && !_canAcceptEngineEvents) {
           return;
         }
         notifyChannelNeedsRefresh();
       },
-      onMessageReceiptResponse: (_) {
+      onMessageReceiptResponse: (event) {
         if (gateEngineEvents && !_canAcceptEngineEvents) {
           return;
         }
+        messageReceiptResponsesNotifier.value = event.responses;
         notifyChannelNeedsRefresh();
+        notifyListeners();
       },
       onMessageMetadataUpdated: (_) {
         if (gateEngineEvents && !_canAcceptEngineEvents) {
@@ -603,12 +793,17 @@ class EngineProvider with ChangeNotifier {
     _channelRefreshThrottleTimer = null;
     if (clearCurrentUser) {
       _currentUserId = '';
+      readReceiptRepository.updateAccount('');
       _failedMessages.clear();
     }
     _totalUnreadCount = 0;
     receivedMessageNotifier.value = null;
     channelMessageUpsertedNotifier.value = null;
     deletedMessagesNotifier.value = null;
+    modifiedMessagesNotifier.value = null;
+    messageReceiptResponsesNotifier.value = null;
+    modifiedMessageSyncCompletedNotifier.value = 0;
+    _invalidateAppSettings();
     typingStatusNotifier.value = null;
     channelPinnedSyncNotifier.value = null;
     channelNoDisturbLevelSyncNotifier.value = null;
@@ -616,6 +811,25 @@ class EngineProvider with ChangeNotifier {
     if (resetConnectionStatus) {
       connectionStatusNotifier.value = ConnectionStatus.unconnected;
     }
+  }
+
+  void _invalidateAppSettings() {
+    _appSettingsFuture = null;
+    _appSettingsFutureGeneration = null;
+    _appSettingsFutureUserId = null;
+    _serverTimeDelta = null;
+    _messageModifiableMinutes = null;
+    readReceiptVersionNotifier.value = null;
+  }
+
+  int _advanceConnectionGeneration() {
+    final generation = ++_connectionGeneration;
+    _advanceSessionGeneration();
+    return generation;
+  }
+
+  void _advanceSessionGeneration() {
+    sessionGenerationNotifier.value = ++_sessionGeneration;
   }
 
   void _notifyEngineMessageReceived(MessageReceivedEvent event) {
@@ -759,13 +973,27 @@ class EngineProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
+    _advanceConnectionGeneration();
+    _appSettingsFuture = null;
+    _appSettingsFutureGeneration = null;
+    _appSettingsFutureUserId = null;
     NCEngine.removeConnectionStatusHandler(_connectionHandlerKey);
     NCEngine.removeMessageHandler(_messageHandlerKey);
     NCEngine.removeChannelHandler(_channelHandlerKey);
+    connectionStatusNotifier.removeListener(_syncReadReceiptConnection);
+    readReceiptVersionNotifier.removeListener(_syncReadReceiptCapability);
+    messageReceiptResponsesNotifier.removeListener(_syncReadReceiptResponses);
+    readReceiptRepository.dispose();
     connectionStatusNotifier.dispose();
     receivedMessageNotifier.dispose();
     channelMessageUpsertedNotifier.dispose();
     deletedMessagesNotifier.dispose();
+    modifiedMessagesNotifier.dispose();
+    modifiedMessageSyncCompletedNotifier.dispose();
+    messageReceiptResponsesNotifier.dispose();
+    readReceiptVersionNotifier.dispose();
+    sessionGenerationNotifier.dispose();
     typingStatusNotifier.dispose();
     channelPinnedSyncNotifier.dispose();
     channelNoDisturbLevelSyncNotifier.dispose();

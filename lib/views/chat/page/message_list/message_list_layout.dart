@@ -92,6 +92,20 @@ extension _MessageListMessageListLayout on _MessageListWidgetState {
             fit: StackFit.expand,
             children: [
               listBody,
+              if (provider.unreadHistoryCount > 0)
+                Positioned(
+                  top: provider.unreadMentionedMessages.isNotEmpty ? 68 : 20,
+                  right: 20,
+                  child: _UnreadCountTip(
+                    count: provider.unreadHistoryCount,
+                    onTap: () async {
+                      await _scrollToBottom(provider);
+                      if (context.mounted) {
+                        provider.dismissUnreadHistoryTip();
+                      }
+                    },
+                  ),
+                ),
               if (provider.unreadMentionedMessages.isNotEmpty)
                 Positioned(
                   top: 20,

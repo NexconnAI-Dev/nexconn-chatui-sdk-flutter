@@ -382,7 +382,7 @@ class ChannelItemConfig {
     this.showTime = true,
     this.showPinnedIndicator = false,
     this.showDirectChannelOnlineStatus = false,
-    this.showReadStatus = false,
+    this.showReadStatus = true,
     this.showNotificationLevelIndicator = true,
     this.avatarRadius = 12,
     this.avatarShape = ChannelAvatarShape.roundedRectangle,

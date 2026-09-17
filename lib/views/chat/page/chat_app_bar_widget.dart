@@ -90,7 +90,9 @@ class _ChatAppBarWidgetState extends State<ChatAppBarWidget> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ChatProvider>(context, listen: false);
-    final engineProvider = Provider.of<EngineProvider?>(context, listen: false);
+    // Group profile changes and total unread updates are emitted by the shared
+    // engine provider. Listening here keeps both the title and back badge live.
+    final engineProvider = Provider.of<EngineProvider?>(context);
     final multiSelectMode = context.select<ChatProvider, bool>(
       (provider) => provider.multiSelectMode,
     );

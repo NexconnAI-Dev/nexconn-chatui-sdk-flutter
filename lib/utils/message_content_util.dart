@@ -11,7 +11,12 @@ String get deletedForEveryoneMessageText =>
 
 String deletedMessageText({NexconnChatUILocalizations? localizations}) {
   final l10n = localizations ?? NexconnChatUILocalizationsEn();
-  return l10n.localeName.startsWith('zh') ? '消息已删除' : 'Message deleted';
+  return l10n.referenceMessageDeleted;
+}
+
+String recalledMessageText({NexconnChatUILocalizations? localizations}) {
+  final l10n = localizations ?? NexconnChatUILocalizationsEn();
+  return l10n.referenceMessageRecalled;
 }
 
 String messageSummary(
@@ -54,6 +59,11 @@ String messageSummary(
   }
   if (message is GroupNotificationMessage) {
     return l10n.messageSummaryGroupNotification;
+  }
+  if (message is InformationNotificationMessage) {
+    return message.message?.trim().isNotEmpty == true
+        ? message.message!.trim()
+        : l10n.messageSummaryInformationNotification;
   }
   if (message is CustomMessage) {
     final summary = _customGroupNotificationSummary(message, l10n);
@@ -351,13 +361,17 @@ String referenceMessageContent(
   Message? message, {
   NexconnChatUILocalizations? localizations,
   bool isDeleted = false,
+  bool isRecalled = false,
 }) {
   final l10n = localizations ?? NexconnChatUILocalizationsEn();
-  if (message == null) {
-    return '';
-  }
   if (isDeleted) {
     return deletedMessageText(localizations: l10n);
+  }
+  if (isRecalled) {
+    return recalledMessageText(localizations: l10n);
+  }
+  if (message == null) {
+    return '';
   }
   if (message is TextMessage) {
     return message.text ?? '';

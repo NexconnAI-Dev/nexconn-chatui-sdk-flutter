@@ -26,11 +26,12 @@ class MainTabPage extends StatefulWidget {
 
 class _MainTabPageState extends State<MainTabPage> {
   int _currentIndex = 0;
+  late final List<Widget> _pages;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = widget.themeProvider.tokens;
-    final pages = <Widget>[
+  void initState() {
+    super.initState();
+    _pages = <Widget>[
       const ChannelDemoPage(),
       SettingsPage(
         loginProvider: widget.loginProvider,
@@ -39,9 +40,13 @@ class _MainTabPageState extends State<MainTabPage> {
         userInfoProvider: widget.userInfoProvider,
       ),
     ];
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    final theme = widget.themeProvider.tokens;
     return Scaffold(
-      body: pages[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: widget.themeProvider.mode == NexconnThemeMode.light
             ? theme.panelColor

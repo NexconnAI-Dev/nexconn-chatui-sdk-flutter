@@ -1,4 +1,5 @@
 import 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart';
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -26,9 +27,10 @@ import '../../../utils/time_util.dart';
 import '../../../utils/voice_message_layout.dart';
 import '../../chat_extras/file_preview_page.dart';
 import '../../chat_extras/photo_preview_page.dart';
-import '../../chat_extras/read_receipt_users_sheet.dart';
+import '../../chat_extras/read_receipt_detail_page.dart';
 import '../../chat_extras/short_video_preview_page.dart';
 import '../../../l10n/nexconn_chat_ui_l10n.dart';
+import 'read_receipt_indicator.dart';
 
 part 'core/message_bubble_layout.dart';
 part 'core/message_bubble_accessories.dart';
@@ -62,10 +64,14 @@ final Map<String, ChatProfileInfo?> _messageProfileValueCache =
 
 /// Default renderer for a Nexconn Message bubble.
 class MessageBubble extends StatelessWidget {
+  static const Key multiSelectHitTargetKey = ValueKey(
+    'message-multi-select-hit-target',
+  );
   static const Key mediaPreviewKey = ValueKey('message-media-preview');
   static const Key mediaPreviewContentKey = ValueKey(
     'message-media-preview-content',
   );
+  static const Key gifDownloadKey = ValueKey('message-gif-download');
   static const Key referenceImagePreviewKey = ValueKey(
     'message-reference-image-preview',
   );
@@ -78,7 +84,10 @@ class MessageBubble extends StatelessWidget {
   );
   static const Key sendingStatusKey = ValueKey('message-sending-status');
   static const Key failedStatusKey = ValueKey('message-failed-status');
-  static const double _mediaPreviewSize = 180;
+  static const Key editUpdatingStatusKey = ValueKey(
+    'message-edit-updating-status',
+  );
+  static const Key editFailedStatusKey = ValueKey('message-edit-failed-status');
   static const double _voiceIconLegacySize = 20;
 
   final Message message;
@@ -210,6 +219,9 @@ abstract class _MessageBubbleBase extends StatelessWidget {
     if (message is FileMessage) return _FileMessageBubble(args);
     if (message is CombineMessage) return _CombineMessageBubble(args);
     if (message is LocationMessage) return _LocationMessageBubble(args);
+    if (message is InformationNotificationMessage) {
+      return _InformationNotificationMessageBubble(args);
+    }
     if (_isGroupNotificationMessage(message)) {
       return _GroupNotificationMessageBubble(args);
     }

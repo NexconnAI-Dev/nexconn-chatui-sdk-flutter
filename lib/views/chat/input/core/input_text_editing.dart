@@ -3,6 +3,53 @@ part of '../message_input_widget.dart';
 extension _MessageInputInputTextEditing on _MessageInputWidgetState {
   static const Duration _keyboardShowScrollDelay = Duration(milliseconds: 500);
   static const Duration _keyboardHideScrollDelay = Duration(milliseconds: 200);
+  static const Duration _messageEditabilityPollInterval = Duration(seconds: 1);
+
+  void _syncEditingAvailability(
+    MessageInputProvider input,
+    int editingRevision,
+  ) {
+    _messageEditabilityTimer?.cancel();
+    _messageEditabilityTimer = null;
+    final message = input.editingMessage;
+    if (message == null) {
+      _editingMessageEditable = true;
+      return;
+    }
+    final chat = context.read<ChatProvider>();
+    _editingMessageEditable = chat.isMessageStillEditable(message);
+    _messageEditabilityTimer = Timer.periodic(_messageEditabilityPollInterval, (
+      timer,
+    ) {
+      if (!mounted || input.editingRevision != editingRevision) {
+        timer.cancel();
+        if (identical(_messageEditabilityTimer, timer)) {
+          _messageEditabilityTimer = null;
+        }
+        return;
+      }
+      final activeMessage = input.editingMessage;
+      if (activeMessage == null) {
+        timer.cancel();
+        if (identical(_messageEditabilityTimer, timer)) {
+          _messageEditabilityTimer = null;
+        }
+        return;
+      }
+      final editable = chat.isMessageStillEditable(activeMessage);
+      if (editable == _editingMessageEditable) return;
+      _setEditingMessageEditable(editable);
+    });
+  }
+
+  bool _isActiveEditAvailable(MessageInputProvider input, ChatProvider chat) {
+    final message = input.editingMessage;
+    return message == null ||
+        (_editingMessageEditable && chat.isMessageStillEditable(message));
+  }
+
+  bool _canSubmitText(MessageInputProvider input, ChatProvider chat) =>
+      input.hasDraft && _isActiveEditAvailable(input, chat);
 
   void _handleInputTextChanged() {
     _recordComposerResizeKeepBottomIntent();

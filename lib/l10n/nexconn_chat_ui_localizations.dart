@@ -317,6 +317,30 @@ abstract class NexconnChatUILocalizations {
   /// **'Failed to load read receipt users'**
   String get chatReadReceiptUsersLoadFailed;
 
+  /// No description provided for @chatReadReceiptPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Read status pending'**
+  String get chatReadReceiptPending;
+
+  /// No description provided for @chatReadReceiptNotRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get chatReadReceiptNotRead;
+
+  /// No description provided for @chatReadReceiptFullyRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get chatReadReceiptFullyRead;
+
+  /// No description provided for @chatReadReceiptPartiallyRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read {readCount} of {totalCount}'**
+  String chatReadReceiptPartiallyRead(int readCount, int totalCount);
+
   /// No description provided for @chatLongPressCopy.
   ///
   /// In en, this message translates to:
@@ -352,6 +376,12 @@ abstract class NexconnChatUILocalizations {
   /// In en, this message translates to:
   /// **'Reply'**
   String get chatLongPressReference;
+
+  /// No description provided for @chatLongPressEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get chatLongPressEdit;
 
   /// No description provided for @chatLongPressMore.
   ///
@@ -436,6 +466,12 @@ abstract class NexconnChatUILocalizations {
   /// In en, this message translates to:
   /// **'Failed to forward messages.'**
   String get chatForwardFailed;
+
+  /// No description provided for @chatForwardMediaDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Media download failed. Check your network and try again.'**
+  String get chatForwardMediaDownloadFailed;
 
   /// No description provided for @chatSelectedMessages.
   ///
@@ -1127,6 +1163,12 @@ abstract class NexconnChatUILocalizations {
   /// **'Image unavailable'**
   String get photoImageUnavailable;
 
+  /// No description provided for @photoImageLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Image failed to load'**
+  String get photoImageLoadFailed;
+
   /// No description provided for @photoVideoPreview.
   ///
   /// In en, this message translates to:
@@ -1270,6 +1312,90 @@ abstract class NexconnChatUILocalizations {
   /// In en, this message translates to:
   /// **'[Group Notification]'**
   String get messageSummaryGroupNotification;
+
+  /// No description provided for @messageSummaryInformationNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'[Information]'**
+  String get messageSummaryInformationNotification;
+
+  /// No description provided for @messageInputEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing message'**
+  String get messageInputEditing;
+
+  /// No description provided for @messageInputCancelEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel editing'**
+  String get messageInputCancelEditing;
+
+  /// No description provided for @messageEditSwitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch message?'**
+  String get messageEditSwitchTitle;
+
+  /// No description provided for @messageEditSwitchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current edit will be discarded.'**
+  String get messageEditSwitchMessage;
+
+  /// No description provided for @messageEditUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This message can no longer be edited'**
+  String get messageEditUnavailable;
+
+  /// No description provided for @messageEditFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to edit message'**
+  String get messageEditFailed;
+
+  /// No description provided for @messageEdited.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get messageEdited;
+
+  /// No description provided for @messageEditUpdating.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating'**
+  String get messageEditUpdating;
+
+  /// No description provided for @messageEditRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed. Tap to retry'**
+  String get messageEditRetry;
+
+  /// No description provided for @messageEditExpandTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand editor'**
+  String get messageEditExpandTooltip;
+
+  /// No description provided for @messageInputEmojiTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Emoji'**
+  String get messageInputEmojiTooltip;
+
+  /// No description provided for @referenceMessageDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'This message was deleted'**
+  String get referenceMessageDeleted;
+
+  /// No description provided for @referenceMessageRecalled.
+  ///
+  /// In en, this message translates to:
+  /// **'This message was recalled'**
+  String get referenceMessageRecalled;
 
   /// No description provided for @messageSummaryUnknown.
   ///
