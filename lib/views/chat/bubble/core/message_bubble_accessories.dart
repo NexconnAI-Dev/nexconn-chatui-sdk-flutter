@@ -2,21 +2,10 @@ part of '../message_bubble.dart';
 
 extension _MessageBubbleAccessories on _MessageBubbleBase {
   Widget _multiSelectIcon() {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: SizedBox(
-        key: MessageBubble.multiSelectHitTargetKey,
-        width: 44,
-        height: 44,
-        child: Center(
-          child: ChatUIAsset.image(
-            selected ? 'multi_select.png' : 'multi_unselect.png',
-            width: kBubbleMultiSelectIconSize,
-            height: kBubbleMultiSelectIconSize,
-          ),
-        ),
-      ),
+    return ChatUIAsset.image(
+      selected ? 'multi_select.png' : 'multi_unselect.png',
+      width: kBubbleMultiSelectIconSize,
+      height: kBubbleMultiSelectIconSize,
     );
   }
 
@@ -26,11 +15,7 @@ extension _MessageBubbleAccessories on _MessageBubbleBase {
     if (!config.messageListConfig.showAvatar) {
       return width;
     }
-    final avatarWidth = config.messageListConfig.showAvatar
-        ? kBubbleAvatarSize + 2 * kBubbleAvatarPadding
-        : 0;
-    final selectionWidth = multiSelectMode ? 44 : 0;
-    return width - avatarWidth - selectionWidth;
+    return width - kBubbleAvatarSize - 2 * kBubbleAvatarPadding;
   }
 
   Widget _timeSeparator(BuildContext context) {

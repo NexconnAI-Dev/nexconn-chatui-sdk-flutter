@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart';
 import 'package:flutter/material.dart';
@@ -262,14 +261,7 @@ class _MessageListRenderState {
     return _MessageListRenderState(
       isLoading: provider.isLoading,
       messageCount: messages.length,
-      // Row-level selectors handle message replacements. Keep the outer list
-      // stable while an edit changes only one item, so the scrollable list is
-      // not rebuilt for every modification event.
-      messageSignature: Object.hash(
-        messages.length,
-        messages.isEmpty ? null : _messageRenderSignature(messages.first),
-        messages.isEmpty ? null : _messageRenderSignature(messages.last),
-      ),
+      messageSignature: Object.hashAll(messages.map(_messageRenderSignature)),
       multiSelectMode: provider.multiSelectMode,
       selectedSignature: Object.hashAll(
         selectedMessages.map(_messageIdentitySignature),

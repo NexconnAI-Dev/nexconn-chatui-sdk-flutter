@@ -3,7 +3,6 @@ part of '../chat_provider.dart';
 extension _ChatProviderMessageStore on ChatProvider {
   void _syncLoadedMessagesDisplayState(Iterable<Message> messages) {
     for (final message in messages) {
-      _restoreRememberedReferenceTerminalStatus(message);
       _syncOutgoingStatusOverrideFromMessage(message);
       if (_directionOf(message) != MessageDirection.send) {
         continue;
@@ -48,9 +47,6 @@ extension _ChatProviderMessageStore on ChatProvider {
     _messages = _messages
         .where((m) => !_isLegacyPlaceholderMessage(m))
         .toList();
-    if (previousMessageCount != _messages.length) {
-      _markMessageCachesDirty();
-    }
     _unreadMentionedMessages = _unreadMentionedMessages
         .where((m) => !_isLegacyPlaceholderMessage(m))
         .toList();
@@ -177,16 +173,10 @@ extension _ChatProviderMessageStore on ChatProvider {
     final purgedLegacy = _purgeLegacyPlaceholderMessages();
     if (messages.isEmpty) {
       if (purgedLegacy && notifyListeners) {
-        _markReferenceMessageIndexDirty();
-        _markMessageRenderChanged();
         _safeNotifyListeners();
       }
       return purgedLegacy;
     }
-    for (final message in messages) {
-      _invalidateMessageModification(message);
-    }
-    _removeReadReceiptStateForMessages(messages);
     final deletedKeys = messages.map(_keyOf).toSet();
     if (deletedKeys.isEmpty) {
       return false;
@@ -197,7 +187,6 @@ extension _ChatProviderMessageStore on ChatProvider {
     _messages = _messages
         .where((m) => !deletedKeys.contains(_keyOf(m)))
         .toList();
-    _markMessageCachesDirty();
     _unreadMentionedMessages = _unreadMentionedMessages
         .where((m) => !deletedKeys.contains(_keyOf(m)))
         .toList();
@@ -220,11 +209,7 @@ extension _ChatProviderMessageStore on ChatProvider {
         previousMentionCount != _unreadMentionedMessages.length ||
         previousSelectionCount != _selectedMessageKeys.length ||
         (currentReference != null && _referenceMessage == null);
-    if (changed || purgedLegacy) {
-      _markReferenceMessageIndexDirty();
-    }
     if ((changed || purgedLegacy) && notifyListeners) {
-      _markMessageRenderChanged();
       _safeNotifyListeners();
     }
     return changed || purgedLegacy;
@@ -236,14 +221,6 @@ extension _ChatProviderMessageStore on ChatProvider {
     bool notifyListeners = true,
     bool notifyChannel = true,
   }) {
-    _invalidateMessageModification(recalledMessage);
-    if (original != null) {
-      _invalidateMessageModification(original);
-    }
-    _removeReadReceiptStateForMessages([
-      recalledMessage,
-      if (original != null) original,
-    ]);
     final recallKeys = <String>{
       _keyOf(recalledMessage),
       if (original != null) _keyOf(original),
@@ -254,7 +231,6 @@ extension _ChatProviderMessageStore on ChatProvider {
     var changed = false;
     if (index >= 0) {
       _messages[index] = recalledMessage;
-      _markMessageCachesDirty();
       changed = true;
     }
     final previousMentionCount = _unreadMentionedMessages.length;
@@ -275,12 +251,7 @@ extension _ChatProviderMessageStore on ChatProvider {
       changed = true;
     }
     _markReferenceMessageUnavailable(recalledMessage, original: original);
-    if (changed) {
-      _markMessageCachesDirty();
-      _markReferenceMessageIndexDirty();
-    }
     if (changed && notifyListeners) {
-      _markMessageRenderChanged();
       if (notifyChannel) {
         _notifyChannelMessageUpsertedFromLocal(
           recalledMessage,
@@ -303,28 +274,16 @@ extension _ChatProviderMessageStore on ChatProvider {
   void _upsertMessageInternal(Message message, {required bool notifyChannel}) {
     _purgeLegacyPlaceholderMessages();
     final effectiveMessage = message;
-    _restoreRememberedReferenceTerminalStatus(effectiveMessage);
     _clearReferenceMessageUnavailable(effectiveMessage);
     _syncOutgoingStatusOverrideFromMessage(effectiveMessage);
     final identityKeys = _identityKeysOf(effectiveMessage);
 
-    var index = -1;
-    final messageId = effectiveMessage.messageId;
-    if (messageId != null && messageId.isNotEmpty) {
-      index = _messageIndexForId(messageId) ?? -1;
-    }
-    if (index < 0) {
-      index = _messages.indexWhere((m) => _sharesIdentity(m, identityKeys));
-    }
+    final index = _messages.indexWhere((m) => _sharesIdentity(m, identityKeys));
     if (index >= 0) {
-      final previous = _messages[index];
       _messages[index] = effectiveMessage;
-      _updateCachedMessageAt(index, effectiveMessage, previous: previous);
     } else {
       _messages = [..._messages, effectiveMessage];
-      _markMessageCachesDirty();
     }
-    _markReferenceMessageIndexDirty();
     final unreadIndex = _unreadMentionedMessages.indexWhere(
       (m) => _sharesIdentity(m, identityKeys),
     );
@@ -334,7 +293,6 @@ extension _ChatProviderMessageStore on ChatProvider {
     if (notifyChannel) {
       _notifyChannelMessageUpsertedFromLocal(effectiveMessage);
     }
-    _markMessageRenderChanged();
     _safeNotifyListeners();
   }
 
@@ -351,9 +309,6 @@ extension _ChatProviderMessageStore on ChatProvider {
       mergedMessages[_keyOf(effectiveMessage)] = effectiveMessage;
     }
     _messages = mergedMessages.values.toList();
-    _markMessageCachesDirty();
-    _markReferenceMessageIndexDirty();
-    _markMessageRenderChanged();
 
     if (_unreadMentionedMessages.isNotEmpty) {
       final mergedUnreadMentioned = <String, Message>{

@@ -81,32 +81,6 @@ typedef ChatMessageBubbleBuilder =
       ChatPageConfig config,
     );
 
-/// Display data passed to a custom read-receipt member row.
-class ChatReadReceiptMemberViewData {
-  /// Raw receipt entry returned by the configured loader or SDK page source.
-  final ChatReadReceiptUserEntry receiptUser;
-
-  /// Profile resolved for [receiptUser], with a user-ID fallback.
-  final ChatProfileInfo profile;
-
-  /// Whether this row belongs to the read or unread tab.
-  final MessageReadReceiptStatus readStatus;
-
-  /// Zero-based index within the current tab.
-  final int index;
-
-  const ChatReadReceiptMemberViewData({
-    required this.receiptUser,
-    required this.profile,
-    required this.readStatus,
-    required this.index,
-  });
-}
-
-/// Builds one custom member row in the read-receipt detail sheet.
-typedef ChatReadReceiptMemberBuilder =
-    Widget Function(BuildContext context, ChatReadReceiptMemberViewData data);
-
 /// Resolves a chat title for a channel.
 typedef ChatTitleResolver =
     FutureOr<String?> Function(BuildContext context, BaseChannel channel);
@@ -195,9 +169,6 @@ class ChatPageConfig {
   /// Optional profile resolver used by titles, sender names, and avatars.
   final ChatProfileProvider? profileProvider;
 
-  /// Optional custom builder for read-receipt member rows.
-  final ChatReadReceiptMemberBuilder? readReceiptMemberBuilder;
-
   /// Optional hook that can block or adjust send flow before SDK send.
   final ChatBeforeSendMessageInterceptor? onBeforeSendMessage;
 
@@ -217,7 +188,6 @@ class ChatPageConfig {
     this.onForwardSelectedMessages,
     this.customMessageBubbleBuilders,
     this.profileProvider,
-    this.readReceiptMemberBuilder,
     this.onBeforeSendMessage,
     this.onAfterSendMessage,
     this.onAsyncMessageReceived,
@@ -283,10 +253,6 @@ class MessageListConfig {
   final bool showSenderName;
 
   /// Whether outgoing send status is shown.
-  ///
-  /// Deprecated: 对齐 IMKit 已读状态 V5 后，发送状态不再以文字形式展示，
-  /// 发送中/失败图标始终显示；已读状态由 [showReadReceiptIndicator] 控制。
-  @Deprecated('Use showReadReceiptIndicator to control the V5 read status.')
   final bool showSentStatus;
 
   /// Whether unread history tips are shown.
@@ -305,17 +271,12 @@ class MessageListConfig {
   final String? newMessageTipText;
   final String? typingStatusTipText;
   final bool showReadReceiptUserList;
-  final bool showReadReceiptIndicator;
-  final double readReceiptIndicatorSize;
-  final Color? readReceiptReadColor;
-  final Color? readReceiptUnreadColor;
   final String? readReceiptUsersTitle;
   final String? readReceiptUsersReadTabText;
   final String? readReceiptUsersUnreadTabText;
   final String? readReceiptUsersLoadingText;
   final String? readReceiptUsersEmptyText;
   final String? readReceiptUsersLoadFailedText;
-  final int readReceiptUsersPageSize;
   final ChatMessageLinkTap? onLinkTap;
   final ChatMessagePhoneTap? onPhoneTap;
   final ChatReadReceiptStatusTap? onReadReceiptStatusTap;
@@ -347,25 +308,19 @@ class MessageListConfig {
     this.newMessageTipText,
     this.typingStatusTipText,
     this.showReadReceiptUserList = true,
-    this.showReadReceiptIndicator = true,
-    this.readReceiptIndicatorSize = 16,
-    this.readReceiptReadColor,
-    this.readReceiptUnreadColor,
     this.readReceiptUsersTitle,
     this.readReceiptUsersReadTabText,
     this.readReceiptUsersUnreadTabText,
     this.readReceiptUsersLoadingText,
     this.readReceiptUsersEmptyText,
     this.readReceiptUsersLoadFailedText,
-    this.readReceiptUsersPageSize = 50,
     this.onLinkTap,
     this.onPhoneTap,
     this.onReadReceiptStatusTap,
     this.onResendMessage,
     this.readReceiptUsersLoader,
     this.enableSwipeToReference = false,
-  }) : assert(readReceiptUsersPageSize >= 1 && readReceiptUsersPageSize <= 100),
-       assert(readReceiptIndicatorSize > 0);
+  });
 }
 
 /// Configuration for the message long-press action menu.
@@ -384,16 +339,12 @@ class ChatMessageLongPressMenuConfig {
 
   /// Whether the reference action is shown.
   final bool showReferenceButton;
-
-  /// Whether the built-in text-message edit action is shown.
-  final bool showEditButton;
   final bool showMoreButton;
   final bool showForwardButton;
   final String? copyText;
   final String? deleteText;
   final String? deleteForAllText;
   final String? referenceText;
-  final String? editText;
   final String? moreText;
   final String? forwardText;
 
@@ -418,14 +369,12 @@ class ChatMessageLongPressMenuConfig {
     this.showDeleteButton = true,
     this.showDeleteForAllButton = true,
     this.showReferenceButton = true,
-    this.showEditButton = true,
     this.showMoreButton = true,
     this.showForwardButton = true,
     this.copyText,
     this.deleteText,
     this.deleteForAllText,
     this.referenceText,
-    this.editText,
     this.moreText,
     this.forwardText,
     this.deleteBehavior = ChatMessageDeleteBehavior.forMe,

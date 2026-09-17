@@ -1,7 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart';
@@ -30,7 +29,6 @@ import '../../../utils/chatui_asset.dart';
 import '../../../utils/chatui_image_util.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/message_content_util.dart';
-import '../../../utils/video_duration_util.dart';
 import '../page/message_list_controller.dart';
 import '../../chat_extras/forward_select_page.dart';
 import '../../../l10n/nexconn_chat_ui_l10n.dart';
@@ -52,7 +50,6 @@ part 'voice/voice_recording.dart';
 part 'voice/voice_feedback.dart';
 part 'core/input_feedback.dart';
 part 'core/input_text_editing.dart';
-part 'core/message_edit_bar.dart';
 part 'core/draft_sync.dart';
 part 'actions/mention_picker.dart';
 
@@ -81,7 +78,7 @@ class MessageInputWidget extends StatefulWidget {
 }
 
 class _MessageInputWidgetState extends State<MessageInputWidget>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver {
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   final ScrollController _textScrollController = ScrollController();
@@ -89,8 +86,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
   final PageController _extensionPageController = PageController();
   static final Map<String, MessageInputMode> _channelInputModes =
       <String, MessageInputMode>{};
-  static final Expando<Map<String, Message>> _referenceDraftsByEngine =
-      Expando<Map<String, Message>>('message input reference drafts');
   MessageInputProvider? _ownedInputProvider;
   MessageInputProvider? _listenedInputProvider;
   Timer? _draftSaveTimer;
@@ -99,7 +94,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
   Timer? _inputTextScrollTimer;
   Timer? _chatBottomStabilizeTimer;
   Timer? _keyboardMetricsBottomStabilizeTimer;
-  Timer? _messageEditabilityTimer;
   MessageInputVoiceRecorder? _activeVoiceRecorder;
   Future<void>? _voiceStartOperation;
   String? _lastAutoFocusedReferenceKey;
@@ -112,28 +106,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
   bool _pendingKeyboardMetricsKeepBottom = false;
   bool _composerResizeKeepBottomResetScheduled = false;
   bool _keyboardKeepBottomIntent = false;
-  bool _editingMessageEditable = true;
-  bool _wasMultiSelectMode = false;
-  bool _restoreFocusAfterMultiSelect = false;
-  int _draftWriteGeneration = 0;
-  int _observedEditingRevision = -1;
-  String? _observedEditingMessageId;
-  ChatProvider? _pendingDraftChatProvider;
-  String? _pendingDraftEditingMessageId;
-  String? _pendingDraftValue;
-  List<String>? _pendingDraftMentionUserIds;
-  int? _pendingDraftGeneration;
-  OverlayEntry? _fullScreenEditEntry;
-  AnimationController? _fullScreenEditAnimation;
-  final ScrollController _fullScreenTextScrollController = ScrollController();
-
-  /// Rebuilds the composer after the full-screen edit layer is fully removed
-  /// so the inline edit bar only remounts its own text field.
-  void _handleFullScreenEditOverlayRemoved() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
 
   static const Duration _draftSaveDelay = Duration(milliseconds: 350);
   static const Duration _typingSendDelay = Duration(milliseconds: 250);
@@ -159,7 +131,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
     }
     _syncInitialDraft();
     _bindInputProviderStateListener();
-    unawaited(_restoreEditedMessageDraft());
     _scheduleEmojiPageLoad();
   }
 
@@ -167,14 +138,10 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
   void didUpdateWidget(covariant MessageInputWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (_isDifferentChannel(oldWidget.channel, widget.channel)) {
-      _cancelPendingDraftSave(flush: true);
+      _draftSaveTimer?.cancel();
       _typingTimer?.cancel();
       _didSyncInitialDraft = false;
-      _draftWriteGeneration++;
       _syncInitialDraft(clearReference: true);
-      _observedEditingRevision = _inputProvider.editingRevision;
-      _observedEditingMessageId = null;
-      unawaited(_restoreEditedMessageDraft());
     } else if (oldWidget.channel.draft != widget.channel.draft) {
       _didSyncInitialDraft = false;
       _syncInitialDraft();
@@ -192,14 +159,12 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _hideFullScreenEditOverlay();
-    _cancelPendingDraftSave(flush: true);
+    _draftSaveTimer?.cancel();
     _typingTimer?.cancel();
     _voiceMaximumDurationTimer?.cancel();
     _inputTextScrollTimer?.cancel();
     _chatBottomStabilizeTimer?.cancel();
     _keyboardMetricsBottomStabilizeTimer?.cancel();
-    _messageEditabilityTimer?.cancel();
     unawaited(_cancelActiveVoiceRecording());
     _emojiPageController.removeListener(_handleEmojiPageChanged);
     _controller.removeListener(_handleInputTextChanged);
@@ -207,7 +172,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
     _emojiPageController.dispose();
     _extensionPageController.dispose();
     _textScrollController.dispose();
-    _fullScreenTextScrollController.dispose();
     _controller.dispose();
     _focusNode.dispose();
     _listenedInputProvider?.removeListener(_handleInputProviderStateChanged);
@@ -226,28 +190,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
     }
     _keyboardKeepBottomIntent = true;
     _scheduleKeyboardMetricsKeepBottom();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!mounted ||
-        !_didResolveInputProvider ||
-        state != AppLifecycleState.resumed ||
-        ModalRoute.of(context)?.isCurrent != true) {
-      return;
-    }
-    final input = _inputProvider;
-    if (input.draft.trim().isEmpty || input.isEditing) {
-      return;
-    }
-    input.setMode(MessageInputMode.text);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted &&
-          ModalRoute.of(context)?.isCurrent == true &&
-          input.draft.trim().isNotEmpty) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   @override
@@ -271,13 +213,6 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
     );
   }
 
-  void _setEditingMessageEditable(bool value) {
-    if (!mounted || _editingMessageEditable == value) {
-      return;
-    }
-    setState(() => _editingMessageEditable = value);
-  }
-
   void _bindInputProviderStateListener() {
     final provider = _inputProvider;
     if (identical(_listenedInputProvider, provider)) {
@@ -294,25 +229,8 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
     if (provider == null) {
       return;
     }
-    _handleEditingSessionChanged(provider);
-    if (!provider.isEditing) {
-      final referenceKey = _channelReferenceDraftKey(widget.channel);
-      final reference = provider.referenceMessage;
-      if (reference == null || provider.draft.trim().isEmpty) {
-        _channelReferenceDrafts.remove(referenceKey);
-      } else {
-        _channelReferenceDrafts[referenceKey] = reference;
-      }
-    }
     final mode = provider.mode;
     _channelInputModes[_channelInputModeKey(widget.channel)] = mode;
-    final draft = provider.draft;
-    if (_controller.text != draft) {
-      _controller.value = TextEditingValue(
-        text: draft,
-        selection: TextSelection.collapsed(offset: draft.length),
-      );
-    }
     _syncKeyboardToInputMode(mode);
   }
 
@@ -342,14 +260,5 @@ class _MessageInputWidgetState extends State<MessageInputWidget>
         ? ''
         : subChannelId;
     return '${channel.channelType.name}:${channel.channelId}:$normalizedSubChannelId';
-  }
-
-  String _channelReferenceDraftKey(BaseChannel channel) {
-    return _channelInputModeKey(channel);
-  }
-
-  Map<String, Message> get _channelReferenceDrafts {
-    final engineProvider = context.read<EngineProvider>();
-    return _referenceDraftsByEngine[engineProvider] ??= <String, Message>{};
   }
 }

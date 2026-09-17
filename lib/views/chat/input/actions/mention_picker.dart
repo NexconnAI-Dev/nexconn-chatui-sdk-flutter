@@ -25,9 +25,6 @@ extension _MessageInputMentionPickerExtension on _MessageInputWidgetState {
     if (currentDraft[cursor - 1] != '@') {
       return;
     }
-    if (cursor > 1 && _isEmailLocalPartCharacter(currentDraft[cursor - 2])) {
-      return;
-    }
     _isPickingMention = true;
     try {
       final candidate = await _pickMentionCandidate(context);
@@ -46,10 +43,6 @@ extension _MessageInputMentionPickerExtension on _MessageInputWidgetState {
         (widget.config.mentionPicker != null ||
             widget.config.mentionResolver != null) &&
         widget.channel.channelType == ChannelType.group;
-  }
-
-  bool _isEmailLocalPartCharacter(String value) {
-    return RegExp(r'[A-Za-z0-9._%+\-]').hasMatch(value);
   }
 
   Future<MessageInputMentionCandidate?> _pickMentionCandidate(

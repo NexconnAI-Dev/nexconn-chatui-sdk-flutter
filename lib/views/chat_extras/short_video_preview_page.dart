@@ -21,7 +21,6 @@ class ShortVideoPreviewPage extends StatefulWidget {
   static const Key controlsKey = ValueKey('short-video-preview-controls');
   static const Key playPauseKey = ValueKey('short-video-preview-play-pause');
   static const Key saveButtonKey = ValueKey('short-video-preview-save');
-  static const Key retryButtonKey = ValueKey('short-video-preview-retry');
 
   final List<ShortVideoMessage> videos;
   final int initialIndex;
@@ -52,7 +51,6 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
   bool _controlsVisible = true;
   bool _isPreparing = false;
   bool _hasError = false;
-  Object? _downloadError;
   bool _isSaving = false;
   bool _handledRecallForCurrentPreview = false;
 
@@ -112,7 +110,6 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
     setState(() {
       _isPreparing = true;
       _hasError = false;
-      _downloadError = null;
     });
     final path = await _resolveVideoPath(video, token);
     if (!mounted || token != _prepareToken) {
@@ -152,7 +149,6 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
         setState(() {
           _isPreparing = false;
           _hasError = true;
-          _downloadError = null;
         });
       }
     }
@@ -336,23 +332,9 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
       return _videoLoading();
     }
     if (_hasError || controller == null || !controller.value.isInitialized) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            _downloadError == null ? '视频不可用' : '下载失败，点击重试',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          if (_downloadError != null) ...[
-            const SizedBox(height: 12),
-            TextButton.icon(
-              key: ShortVideoPreviewPage.retryButtonKey,
-              onPressed: _prepareCurrentVideo,
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('重试', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ],
+      return const Text(
+        'Video unavailable',
+        style: TextStyle(color: Colors.white70),
       );
     }
     final rotatedAspectRatio = _displayAspectRatio(controller.value);
@@ -419,32 +401,32 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
       top: _controlsTop(videoFrame),
       child: SizedBox(
         key: ShortVideoPreviewPage.controlsKey,
-        height: 64,
+        height: 56,
         child: Row(
           children: [
             SizedBox(
-              width: 48,
-              height: 64,
+              width: 42,
+              height: 56,
               child: IconButton(
                 key: ShortVideoPreviewPage.playPauseKey,
                 padding: EdgeInsets.zero,
                 color: Colors.white,
-                iconSize: 44,
+                iconSize: 38,
                 icon: Icon(
                   value?.isPlaying == true ? Icons.pause : Icons.play_arrow,
                 ),
                 onPressed: initialized ? _togglePlayPause : null,
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
             Text(
               '${_formatDuration(position)} / ${_formatDuration(duration)}',
-              style: const TextStyle(color: Colors.white, fontSize: 16),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Container(
-                height: 40,
+                height: 34,
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.14),
@@ -456,7 +438,7 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
                 ),
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    trackHeight: 5,
+                    trackHeight: 3,
                     activeTrackColor: const Color(0xFF3F7BFF),
                     inactiveTrackColor: Colors.white.withValues(alpha: 0.24),
                     disabledActiveTrackColor: const Color(0xFF3F7BFF),
@@ -467,11 +449,11 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
                     disabledThumbColor: Colors.white70,
                     overlayColor: const Color(0x333F7BFF),
                     overlayShape: const RoundSliderOverlayShape(
-                      overlayRadius: 14,
+                      overlayRadius: 10,
                     ),
                     thumbShape: const RoundSliderThumbShape(
-                      enabledThumbRadius: 7,
-                      disabledThumbRadius: 7,
+                      enabledThumbRadius: 5,
+                      disabledThumbRadius: 5,
                     ),
                   ),
                   child: Slider(
@@ -492,15 +474,15 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             SizedBox(
-              width: 48,
-              height: 64,
+              width: 42,
+              height: 56,
               child: IconButton(
                 key: ShortVideoPreviewPage.saveButtonKey,
                 padding: EdgeInsets.zero,
                 color: Colors.white,
-                iconSize: 44,
+                iconSize: 38,
                 icon: _isSaving
                     ? const SizedBox(
                         width: 26,
@@ -745,7 +727,6 @@ class _ShortVideoPreviewPageState extends State<ShortVideoPreviewPage>
       setState(() {
         _downloadingVideoKey = null;
         _downloadProgress = null;
-        _downloadError = e;
       });
       return null;
     }

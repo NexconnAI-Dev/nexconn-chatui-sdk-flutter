@@ -96,7 +96,7 @@ extension _MessageInputToolbarControls on _MessageInputWidgetState {
     ChatProvider chat,
   ) {
     final theme = NexconnThemeProvider.resolveTokens(context);
-    final isEnabled = _canSubmitText(input, chat);
+    final isEnabled = input.hasDraft;
     return TextFieldTapRegion(
       child: Tooltip(
         message: context.chatUIL10n.messageInputSendTooltip,

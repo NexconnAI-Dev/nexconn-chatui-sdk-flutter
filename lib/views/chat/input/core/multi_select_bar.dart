@@ -39,7 +39,6 @@ extension _MessageInputMultiSelectBar on _MessageInputWidgetState {
     BuildContext context,
     ChatProvider chat,
   ) async {
-    final restoreInputFocus = _restoreFocusAfterMultiSelect;
     if (chat.selectedMessages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(context.chatUIL10n.chatNoMessagesToForward)),
@@ -80,19 +79,13 @@ extension _MessageInputMultiSelectBar on _MessageInputWidgetState {
     if (mode == null || !context.mounted) {
       return;
     }
-    await _forwardSelectedMessages(
-      context,
-      chat,
-      preferredMode: mode,
-      restoreInputFocus: restoreInputFocus,
-    );
+    await _forwardSelectedMessages(context, chat, preferredMode: mode);
   }
 
   Future<void> _forwardSelectedMessages(
     BuildContext context,
     ChatProvider chat, {
     ChatForwardMode? preferredMode,
-    bool restoreInputFocus = false,
   }) async {
     final selected = List<Message>.of(chat.selectedMessages);
     if (selected.isEmpty) {
@@ -140,57 +133,6 @@ extension _MessageInputMultiSelectBar on _MessageInputWidgetState {
       return;
     }
     var forwardedToCurrentChannel = false;
-    Future<bool> onChannelSelected(
-      BaseChannel targetChannel,
-      ChatForwardMode mode,
-    ) async {
-      try {
-        final result = await chat.forwardMessages(
-          targetChannel,
-          selected,
-          mode: mode,
-        );
-        if (!context.mounted) {
-          return false;
-        }
-        if (!result.hasForwarded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.chatUIL10n.chatNoMessagesToForward)),
-          );
-          return false;
-        }
-        forwardedToCurrentChannel = _isSameChannelIdentifier(
-          targetChannel.channelIdentifier,
-          chat.channel.channelIdentifier,
-        );
-        if (preferredMode == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                mode == ChatForwardMode.combined
-                    ? context.chatUIL10n.chatForwardedCombined(selected.length)
-                    : context.chatUIL10n.chatForwarded(result.forwardedCount),
-              ),
-            ),
-          );
-        }
-        return true;
-      } catch (error) {
-        if (!context.mounted) {
-          return false;
-        }
-        final message = error is ChatForwardMediaDownloadException
-            ? context.chatUIL10n.chatForwardMediaDownloadFailed
-            : error is NCError
-            ? error.message ?? context.chatUIL10n.chatForwardFailed
-            : error.toString();
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(message)));
-        return false;
-      }
-    }
-
     final forwarded = await pushNexconnChatUINamedRouteOr<bool>(
       context,
       NexconnChatUIRoutes.forward,
@@ -198,39 +140,126 @@ extension _MessageInputMultiSelectBar on _MessageInputWidgetState {
         provider: channelProvider,
         messages: selected,
         initialMode: preferredMode,
-        onChannelSelected: onChannelSelected,
+        onChannelSelected: (targetChannel, mode) async {
+          try {
+            final result = await chat.forwardMessages(
+              targetChannel,
+              selected,
+              mode: mode,
+            );
+            if (!context.mounted) {
+              return false;
+            }
+            if (!result.hasForwarded) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.chatUIL10n.chatNoMessagesToForward),
+                ),
+              );
+              return false;
+            }
+            forwardedToCurrentChannel = _isSameChannelIdentifier(
+              targetChannel.channelIdentifier,
+              chat.channel.channelIdentifier,
+            );
+            if (preferredMode == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    mode == ChatForwardMode.combined
+                        ? context.chatUIL10n.chatForwardedCombined(
+                            selected.length,
+                          )
+                        : context.chatUIL10n.chatForwarded(
+                            result.forwardedCount,
+                          ),
+                  ),
+                ),
+              );
+            }
+            return true;
+          } catch (error) {
+            if (!context.mounted) {
+              return false;
+            }
+            final message = error is NCError
+                ? error.message ?? context.chatUIL10n.chatForwardFailed
+                : error.toString();
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+            return false;
+          }
+        },
       ),
       fallbackRoute: () => MaterialPageRoute<bool>(
         builder: (_) => ForwardSelectPage(
           provider: channelProvider,
           messages: selected,
           initialMode: preferredMode,
-          onChannelSelected: onChannelSelected,
+          onChannelSelected: (targetChannel, mode) async {
+            try {
+              final result = await chat.forwardMessages(
+                targetChannel,
+                selected,
+                mode: mode,
+              );
+              if (!context.mounted) {
+                return false;
+              }
+              if (!result.hasForwarded) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(context.chatUIL10n.chatNoMessagesToForward),
+                  ),
+                );
+                return false;
+              }
+              forwardedToCurrentChannel = _isSameChannelIdentifier(
+                targetChannel.channelIdentifier,
+                chat.channel.channelIdentifier,
+              );
+              if (preferredMode == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      mode == ChatForwardMode.combined
+                          ? context.chatUIL10n.chatForwardedCombined(
+                              selected.length,
+                            )
+                          : context.chatUIL10n.chatForwarded(
+                              result.forwardedCount,
+                            ),
+                    ),
+                  ),
+                );
+              }
+              return true;
+            } catch (error) {
+              if (!context.mounted) {
+                return false;
+              }
+              final message = error is NCError
+                  ? error.message ?? context.chatUIL10n.chatForwardFailed
+                  : error.toString();
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(message)));
+              return false;
+            }
+          },
         ),
       ),
     );
     if (ownsChannelProvider) {
       channelProvider.dispose();
     }
-    if (forwarded == true) {
+    if (forwarded != null) {
       chat.setMultiSelectMode(false);
-      if (restoreInputFocus) {
-        _restoreInputFocusAfterForward();
-      }
       if (forwardedToCurrentChannel) {
         _scheduleScrollCurrentChatToBottom(chat);
       }
     }
-  }
-
-  void _restoreInputFocusAfterForward() {
-    _restoreFocusAfterMultiSelect = false;
-    _inputProvider.setMode(MessageInputMode.text);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _focusNode.canRequestFocus) {
-        _focusNode.requestFocus();
-      }
-    });
   }
 
   void _scheduleScrollCurrentChatToBottom(ChatProvider chat) {

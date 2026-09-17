@@ -10,7 +10,6 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../l10n/nexconn_chat_ui_l10n.dart';
 import '../../providers/chat_provider.dart';
@@ -45,13 +44,9 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
   String? _downloadingMediaKey;
   double? _downloadProgress;
   final Map<String, String> _resolvedLocalPaths = <String, String>{};
-  final Set<String> _failedDownloadMediaKeys = <String>{};
   final bool _chromeVisible = true;
   bool _isSaving = false;
   bool _handledRecallForCurrentPreview = false;
-  VideoPlayerController? _videoController;
-  String? _videoPath;
-  int _videoPrepareToken = 0;
 
   static const Set<String> _imageExtensions = {
     'jpg',
@@ -82,7 +77,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
     _chatProvider = widget.provider;
     _attachDeletedMessageListener();
     _startCurrentMediaDownload();
-    _prepareCurrentVideo();
   }
 
   @override
@@ -96,14 +90,12 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
     _chatProvider = provider;
     _attachDeletedMessageListener();
     _startCurrentMediaDownload();
-    _prepareCurrentVideo();
   }
 
   @override
   void dispose() {
     _cancelCurrentDownload();
     _detachDeletedMessageListener();
-    unawaited(_disposeVideoController());
     _controller.dispose();
     super.dispose();
   }
@@ -117,10 +109,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
       );
     }
 
-    final currentMediaKey = _mediaKey(widget.images[_currentIndex]);
-    final currentDownloadFailed = _failedDownloadMediaKeys.contains(
-      currentMediaKey,
-    );
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -139,7 +127,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
                 _handledRecallForCurrentPreview = false;
               });
               _startCurrentMediaDownload();
-              _prepareCurrentVideo();
             },
             loadingBuilder: (context, event) {
               final expected = event?.expectedTotalBytes;
@@ -150,10 +137,7 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
             },
             builder: (context, index) {
               final media = widget.images[index];
-              final path = _displayPathFor(
-                media,
-                isCurrent: index == _currentIndex,
-              );
+              final path = _displayPathFor(media, isCurrent: index == _currentIndex);
               if (path == null || path.isEmpty) {
                 final thumbnail = _thumbnailBytes(media);
                 final progress = _downloadProgressFor(media);
@@ -231,17 +215,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
               );
             },
           ),
-          if (currentDownloadFailed)
-            Positioned.fill(
-              child: ColoredBox(
-                color: Colors.black,
-                child: _PhotoDownloadFailed(
-                  text: context.chatUIL10n.photoImageLoadFailed,
-                  retryText: context.chatUIL10n.commonRetry,
-                  onRetry: _startCurrentMediaDownload,
-                ),
-              ),
-            ),
           AnimatedPositioned(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
@@ -279,39 +252,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
   }
 
   Widget _buildVideoPreview(String path, ShortVideoMessage video) {
-    final controller = _videoController;
-    if (path == _videoPath && controller?.value.isInitialized == true) {
-      return SizedBox(
-        key: PhotoPreviewPage.videoPreviewKey,
-        width: double.infinity,
-        child: AspectRatio(
-          aspectRatio: controller!.value.aspectRatio,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              VideoPlayer(controller),
-              IconButton(
-                color: Colors.white,
-                iconSize: 56,
-                onPressed: () {
-                  if (controller.value.isPlaying) {
-                    controller.pause();
-                  } else {
-                    controller.play();
-                  }
-                  setState(() {});
-                },
-                icon: Icon(
-                  controller.value.isPlaying
-                      ? Icons.pause_circle_filled
-                      : Icons.play_circle_fill,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
     final duration = video.duration;
     return Container(
       key: PhotoPreviewPage.videoPreviewKey,
@@ -361,61 +301,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
         ],
       ),
     );
-  }
-
-  void _prepareCurrentVideo() {
-    unawaited(_prepareCurrentVideoController());
-  }
-
-  Future<void> _prepareCurrentVideoController() async {
-    final token = ++_videoPrepareToken;
-    await _disposeVideoController();
-    final media = _currentMedia;
-    if (media is! ShortVideoMessage) {
-      return;
-    }
-    final path = _displayPathFor(media, isCurrent: true);
-    if (path == null || path.isEmpty) {
-      return;
-    }
-    try {
-      final controller = _isNetworkPath(path)
-          ? VideoPlayerController.networkUrl(Uri.parse(path))
-          : VideoPlayerController.file(_localFile(path));
-      await controller.initialize();
-      await controller.setLooping(false);
-      if (!mounted || token != _videoPrepareToken) {
-        await controller.dispose();
-        return;
-      }
-      controller.addListener(_handleVideoControllerChanged);
-      setState(() {
-        _videoController = controller;
-        _videoPath = path;
-      });
-      await controller.play();
-    } catch (_) {
-      if (mounted && token == _videoPrepareToken) {
-        setState(() {
-          _videoController = null;
-          _videoPath = null;
-        });
-      }
-    }
-  }
-
-  void _handleVideoControllerChanged() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _disposeVideoController() async {
-    final controller = _videoController;
-    _videoController = null;
-    _videoPath = null;
-    if (controller != null) {
-      controller.removeListener(_handleVideoControllerChanged);
-      await controller.dispose();
-    }
   }
 
   Widget _buildGifPreview(String path) {
@@ -529,7 +414,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
     }
     if (mounted) {
       setState(() {
-        _failedDownloadMediaKeys.remove(key);
         _downloadingMediaKey = key;
         _downloadProgress = 0;
       });
@@ -575,7 +459,6 @@ class _PhotoPreviewPageState extends State<PhotoPreviewPage> {
         return;
       }
       setState(() {
-        _failedDownloadMediaKeys.add(key);
         _downloadingMediaKey = null;
         _downloadProgress = null;
       });
@@ -988,39 +871,6 @@ class _EmptyPhotoState extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(text, style: const TextStyle(color: Colors.white70)),
-        ],
-      ),
-    );
-  }
-}
-
-class _PhotoDownloadFailed extends StatelessWidget {
-  final String text;
-  final String retryText;
-  final VoidCallback onRetry;
-
-  const _PhotoDownloadFailed({
-    required this.text,
-    required this.retryText,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ChatUIAsset.image(
-            'NexconnLightIcon/Thumbnail-failed.png',
-            width: 44,
-            height: 44,
-            color: Colors.white54,
-          ),
-          const SizedBox(height: 12),
-          Text(text, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 12),
-          TextButton(onPressed: onRetry, child: Text(retryText)),
         ],
       ),
     );

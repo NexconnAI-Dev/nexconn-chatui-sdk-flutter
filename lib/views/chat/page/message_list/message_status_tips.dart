@@ -1,13 +1,6 @@
 part of '../message_list_widget.dart';
 
-enum _ChatMessageMenuAction {
-  copy,
-  edit,
-  delete,
-  deleteForAll,
-  reference,
-  more,
-}
+enum _ChatMessageMenuAction { copy, delete, deleteForAll, reference, more }
 
 class _NetworkTip extends StatelessWidget {
   final String text;
@@ -62,25 +55,6 @@ class _UnreadMentionedTip extends StatelessWidget {
       ),
       onPressed: onTap,
       child: Text(context.chatUIL10n.chatUnreadMentionedTip(count)),
-    );
-  }
-}
-
-class _UnreadCountTip extends StatelessWidget {
-  final int count;
-  final VoidCallback onTap;
-
-  const _UnreadCountTip({required this.count, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      style: TextButton.styleFrom(
-        backgroundColor: Colors.black87,
-        foregroundColor: Colors.white,
-      ),
-      onPressed: onTap,
-      child: Text('${context.chatUIL10n.chatUnreadHistoryTip} ($count)'),
     );
   }
 }

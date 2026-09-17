@@ -15,11 +15,6 @@ extension _MessageBubbleVoiceMessageMediaBubble on _MessageBubbleBase {
     final isPlaying =
         player?.currentPlayingMessageId == _messageKey(voice) &&
         player?.state == NexconnAudioPlayerState.playing;
-    final receivedStatus = _receivedStatusOf(voice);
-    final showUnreadDot =
-        !isSent &&
-        receivedStatus != ReceivedStatus.listened &&
-        receivedStatus != ReceivedStatus.read;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => _handleVoiceTap(context, voice),
@@ -32,28 +27,11 @@ extension _MessageBubbleVoiceMessageMediaBubble on _MessageBubbleBase {
             : MainAxisAlignment.start,
         children: [
           if (!isSent)
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _voiceLeadingIcon(
-                  isPlaying: isPlaying,
-                  hasLocalFile: hasLocalFile,
-                  isSent: false,
-                  voice: voice,
-                ),
-                if (showUnreadDot)
-                  const Positioned(
-                    right: -6,
-                    top: -4,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFF3B30),
-                        shape: BoxShape.circle,
-                      ),
-                      child: SizedBox(width: 7, height: 7),
-                    ),
-                  ),
-              ],
+            _voiceLeadingIcon(
+              isPlaying: isPlaying,
+              hasLocalFile: hasLocalFile,
+              isSent: false,
+              voice: voice,
             ),
           SizedBox(
             key: MessageBubble.voiceDurationWidthKey,
@@ -173,14 +151,6 @@ extension _MessageBubbleVoiceMessageMediaBubble on _MessageBubbleBase {
   MessageDirection? _messageDirection() {
     try {
       return message.direction;
-    } on NoSuchMethodError {
-      return null;
-    }
-  }
-
-  ReceivedStatus? _receivedStatusOf(HDVoiceMessage voice) {
-    try {
-      return voice.receivedStatus;
     } on NoSuchMethodError {
       return null;
     }

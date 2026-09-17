@@ -213,14 +213,6 @@ class NexconnAudioPlayerProvider with ChangeNotifier, WidgetsBindingObserver {
     );
   }
 
-  /// Stops playback only when [message] is the currently playing voice.
-  Future<void> stopVoiceMessageIfPlaying(HDVoiceMessage message) async {
-    if (currentPlayingMessageId != _messageKey(message)) {
-      return;
-    }
-    await stopVoiceMessage();
-  }
-
   Future<void> _stopVoiceMessage({
     bool notify = true,
     bool invalidatePendingRequest = true,

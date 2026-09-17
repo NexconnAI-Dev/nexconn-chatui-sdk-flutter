@@ -109,10 +109,7 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
         textDelegate: assetPickerTextDelegateFromLocale(locale),
       ),
     );
-    final media = await _mediaFromAsset(
-      assets?.firstOrNull,
-      resolveVideoDurationFromFile: true,
-    );
+    final media = await _mediaFromAsset(assets?.firstOrNull);
     if (media == null) {
       return const [];
     }
@@ -157,7 +154,6 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
     final media = await _mediaFromAsset(
       asset,
       resolveVideoDurationFromFile: true,
-      maxVideoDurationSeconds: 10,
     );
     if (media == null) {
       return const [];
@@ -199,7 +195,6 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
   Future<_PickedInputMedia?> _mediaFromAsset(
     AssetEntity? asset, {
     bool resolveVideoDurationFromFile = false,
-    int? maxVideoDurationSeconds,
   }) async {
     if (asset == null) {
       return null;
@@ -216,11 +211,7 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
     }
     var duration = asset.duration;
     if (resolveVideoDurationFromFile) {
-      duration = await _resolveVideoDurationInSeconds(
-        path,
-        fallback: duration,
-        maxSeconds: maxVideoDurationSeconds,
-      );
+      duration = await _resolveVideoDurationInSeconds(path, fallback: duration);
     }
     return _PickedInputMedia(
       path: path,
@@ -269,17 +260,13 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
   Future<int> _resolveVideoDurationInSeconds(
     String path, {
     required int fallback,
-    int? maxSeconds,
   }) async {
     for (var attempt = 0; attempt < 5; attempt++) {
       VideoPlayerController? controller;
       try {
         controller = VideoPlayerController.file(File(path));
         await controller.initialize();
-        final fileDuration = normalizedVideoDurationSeconds(
-          controller.value.duration,
-          maxSeconds: maxSeconds,
-        );
+        final fileDuration = controller.value.duration.inSeconds;
         if (fileDuration > 0) {
           return fileDuration;
         }
@@ -290,7 +277,7 @@ extension _MessageInputMediaPicker on _MessageInputWidgetState {
       }
       await Future<void>.delayed(Duration(milliseconds: 120 + (attempt * 80)));
     }
-    return maxSeconds == null || fallback <= maxSeconds ? fallback : maxSeconds;
+    return fallback;
   }
 }
 

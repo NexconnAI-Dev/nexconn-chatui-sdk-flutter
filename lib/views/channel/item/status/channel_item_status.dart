@@ -37,28 +37,14 @@ extension _ChannelItemStatus on ChannelItem {
             height: 14,
           ),
         ),
-        // 已读状态 V5：未读为空灰圈，已读为绿圈对号（仅单聊会到达这里）。
-        ChannelReadStatus.sent ||
-        ChannelReadStatus.delivered ||
-        ChannelReadStatus.read => KeyedSubtree(
-          key: const ValueKey('channel-read-status-receipt'),
-          child: _receiptIndicator(context),
+        _ => Text(
+          _readStatusText(context, status),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Colors.grey[500],
+            fontSize: 11,
+          ),
         ),
       },
-    );
-  }
-
-  Widget _receiptIndicator(BuildContext context) {
-    final receiptData =
-        _maybeChannelProvider(
-          context,
-          listen: true,
-        )?.readReceiptDataFor(channel) ??
-        const ChatReadReceiptDisplayData();
-    return ChatReadReceiptIndicator(
-      displayData: receiptData,
-      channelType: ChannelType.direct,
-      size: 14,
     );
   }
 
@@ -73,19 +59,6 @@ extension _ChannelItemStatus on ChannelItem {
     final engineProvider = _maybeEngineProvider(context, listen: true);
     if (engineProvider?.isFailedMessage(message) == true) {
       return ChannelReadStatus.failed;
-    }
-    final receiptData = _maybeChannelProvider(
-      context,
-      listen: true,
-    )?.readReceiptDataFor(channel);
-    // 已读状态 V5：会话列表仅单聊展示已读/未读状态，群聊不展示。
-    if (receiptData?.isAuthoritative == true) {
-      if (channel.channelType != ChannelType.direct) {
-        return null;
-      }
-      return receiptData!.readCount > 0
-          ? ChannelReadStatus.read
-          : ChannelReadStatus.sent;
     }
     switch (_sentStatusOf(message)) {
       case SentStatus.sending:
@@ -132,17 +105,6 @@ extension _ChannelItemStatus on ChannelItem {
     }
   }
 
-  ChannelProvider? _maybeChannelProvider(
-    BuildContext context, {
-    bool listen = false,
-  }) {
-    try {
-      return Provider.of<ChannelProvider>(context, listen: listen);
-    } on ProviderNotFoundException {
-      return null;
-    }
-  }
-
   MessageDirection? _directionOf(Message message) {
     try {
       return message.direction;
@@ -164,6 +126,21 @@ extension _ChannelItemStatus on ChannelItem {
       return message.receivedStatus;
     } on NoSuchMethodError {
       return null;
+    }
+  }
+
+  String _readStatusText(BuildContext context, ChannelReadStatus status) {
+    switch (status) {
+      case ChannelReadStatus.sending:
+        return context.chatUIL10n.channelReadStatusSending;
+      case ChannelReadStatus.failed:
+        return context.chatUIL10n.channelReadStatusFailed;
+      case ChannelReadStatus.sent:
+        return context.chatUIL10n.channelReadStatusSent;
+      case ChannelReadStatus.delivered:
+        return context.chatUIL10n.channelReadStatusDelivered;
+      case ChannelReadStatus.read:
+        return context.chatUIL10n.channelReadStatusRead;
     }
   }
 
@@ -223,8 +200,7 @@ extension _ChannelItemStatus on ChannelItem {
 
   bool get _hasDraft {
     final draft = channel.draft?.trim();
-    return (draft != null && draft.isNotEmpty) ||
-        channel.editedMessageDraft != null;
+    return draft != null && draft.isNotEmpty;
   }
 }
 

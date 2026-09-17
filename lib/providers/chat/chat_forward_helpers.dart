@@ -9,22 +9,15 @@ extension _ChatProviderForwardHelpers on ChatProvider {
     engineProvider.notifyChannelMessageUpserted(message);
   }
 
-  Future<MessageParams?> _forwardMessageParams(
-    BaseChannel targetChannel,
-    Message message,
-  ) async {
-    final needReceipt = _normalizedNeedReceiptForChannel(
-      targetChannel,
-      message,
-    );
+  Future<MessageParams?> _forwardMessageParams(Message message) async {
     if (message is CombineMessage) {
-      return _forwardCombineMessageParams(message, needReceipt: needReceipt);
+      return _forwardCombineMessageParams(message);
     }
     if (message is TextMessage) {
       final text = message.text?.trim();
       return text == null || text.isEmpty
           ? null
-          : TextMessageParams(text: text, needReceipt: needReceipt);
+          : TextMessageParams(text: text, needReceipt: message.needReceipt);
     }
     if (message is ReferenceMessage) {
       final text = message.text?.trim();
@@ -35,20 +28,20 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       return ReferenceMessageParams(
         referenceMessage: referenceMessage,
         text: text,
-        needReceipt: needReceipt,
+        needReceipt: message.needReceipt,
       );
     }
     if (message is ImageMessage) {
       final path = await _mediaForwardPath(message);
       return path == null
           ? null
-          : ImageMessageParams(path: path, needReceipt: needReceipt);
+          : ImageMessageParams(path: path, needReceipt: message.needReceipt);
     }
     if (message is GIFMessage) {
       final path = await _mediaForwardPath(message);
       return path == null
           ? null
-          : GIFMessageParams(path: path, needReceipt: needReceipt);
+          : GIFMessageParams(path: path, needReceipt: message.needReceipt);
     }
     if (message is HDVoiceMessage) {
       final path = await _mediaForwardPath(message);
@@ -57,7 +50,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
           : HDVoiceMessageParams(
               path: path,
               duration: message.duration ?? 0,
-              needReceipt: needReceipt,
+              needReceipt: message.needReceipt,
             );
     }
     if (message is ShortVideoMessage) {
@@ -67,22 +60,19 @@ extension _ChatProviderForwardHelpers on ChatProvider {
           : ShortVideoMessageParams(
               path: path,
               duration: message.duration ?? 0,
-              needReceipt: needReceipt,
+              needReceipt: message.needReceipt,
             );
     }
     if (message is FileMessage) {
       final path = await _mediaForwardPath(message);
       return path == null
           ? null
-          : FileMessageParams(path: path, needReceipt: needReceipt);
+          : FileMessageParams(path: path, needReceipt: message.needReceipt);
     }
     return null;
   }
 
-  MessageParams? _forwardCombineMessageParams(
-    CombineMessage message, {
-    required bool needReceipt,
-  }) {
+  MessageParams? _forwardCombineMessageParams(CombineMessage message) {
     final summaryList = message.summaryList;
     final nameList = message.nameList;
     final msgList = message.msgList;
@@ -108,7 +98,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       summaryList: List<String>.of(summaryList),
       nameList: List<String>.of(nameList),
       msgList: normalizedMsgList,
-      needReceipt: needReceipt,
+      needReceipt: message.needReceipt,
       jsonMsgKey: jsonMsgKey,
     );
   }
@@ -121,10 +111,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
         jsonMsgKey.isNotEmpty;
   }
 
-  CombineMessageParams? _rawForwardCombineHookParams(
-    BaseChannel targetChannel,
-    CombineMessage message,
-  ) {
+  CombineMessageParams? _rawForwardCombineHookParams(CombineMessage message) {
     final summaryList = message.summaryList;
     final nameList = message.nameList;
     final jsonMsgKey = message.jsonMsgKey?.trim();
@@ -142,7 +129,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       nameList: List<String>.of(nameList),
       msgList: const <CombineMessageInfo>[],
       jsonMsgKey: jsonMsgKey,
-      needReceipt: _normalizedNeedReceiptForChannel(targetChannel, message),
+      needReceipt: message.needReceipt,
     );
   }
 
@@ -165,8 +152,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       ..conversationType = Converter.toRCConversationType(
         targetIdentifier.channelType,
       )
-      ..senderUserId = engineProvider.currentUserId
-      ..needReceipt = hookParams.needReceipt == true;
+      ..senderUserId = engineProvider.currentUserId;
 
     if (!NCEngine.isInitialized) {
       await _sendForwardParams(targetChannel, hookParams);
@@ -207,26 +193,6 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       _notifyAfterSendForChannel(targetChannel, hookParams, null, error);
       throw error;
     }
-  }
-
-  bool _normalizedNeedReceiptForChannel(
-    BaseChannel targetChannel,
-    Message sourceMessage,
-  ) {
-    bool sourceNeedsReceipt;
-    try {
-      sourceNeedsReceipt = sourceMessage.needReceipt == true;
-    } on NoSuchMethodError {
-      sourceNeedsReceipt = false;
-    }
-    if (!sourceNeedsReceipt ||
-        engineProvider.readReceiptVersion != ReadReceiptVersion.version5) {
-      return false;
-    }
-    return switch (targetChannel.channelType) {
-      ChannelType.direct || ChannelType.group => true,
-      ChannelType.open || ChannelType.community || ChannelType.system => false,
-    };
   }
 
   void _refreshCurrentMessagesAfterForwardRawSent(
@@ -545,7 +511,7 @@ extension _ChatProviderForwardHelpers on ChatProvider {
       await Dio().download(remotePath, file.path);
       return file.path;
     } catch (_) {
-      throw const ChatForwardMediaDownloadException();
+      return null;
     }
   }
 

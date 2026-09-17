@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 
 import '../utils/constants.dart';
 import 'engine_provider.dart';
-import 'read_receipt_repository.dart';
 
 /// Builds a custom widget for a BaseChannel.
 typedef ChannelWidgetBuilder = Widget Function(BaseChannel channel);
@@ -95,23 +94,13 @@ class ChannelProvider with ChangeNotifier {
     engineProvider.connectionStatusNotifier.addListener(
       _handleConnectionStatusChanged,
     );
-    engineProvider.readReceiptVersionNotifier.addListener(
-      _handleReadReceiptCapabilityChanged,
-    );
-    engineProvider.readReceiptRepository.addListener(
-      _handleReadReceiptDataChanged,
-    );
     engineProvider.addLocalNotificationFilter(_shouldSuppressLocalNotification);
     NCEngine.addUserHandler(
       _userHandlerKey,
       UserHandler(onSubscriptionChanged: _handleSubscriptionChanged),
     );
     unawaited(engineProvider.refreshConnectionStatus());
-    unawaited(engineProvider.refreshAppSettings());
-    scheduleMicrotask(() {
-      unawaited(_syncDirectChannelOnlineStatuses());
-      unawaited(_syncChannelReadReceipts());
-    });
+    scheduleMicrotask(_syncDirectChannelOnlineStatuses);
   }
 
   /// Loaded channels ready for display.
@@ -153,14 +142,6 @@ class ChannelProvider with ChangeNotifier {
     }
     return _directChannelOnlineStatuses[channel.channelId] ??
         ChannelOnlineStatus.unknown;
-  }
-
-  /// Returns shared V5 receipt state for an eligible direct-channel preview.
-  ChatReadReceiptDisplayData? readReceiptDataFor(BaseChannel channel) {
-    if (!_isChannelReadReceiptCandidate(channel)) return null;
-    return engineProvider.readReceiptRepository.dataForMessage(
-      channel.latestMessage!,
-    );
   }
 
   /// Reloads channels from the first page.
@@ -341,7 +322,6 @@ class ChannelProvider with ChangeNotifier {
         );
         _updateTotalUnreadCount();
         _syncDirectChannelOnlineStatuses();
-        unawaited(_syncChannelReadReceipts());
       }
       _handleChannelLoadSettled(reset: reset, error: error);
       _safeNotifyListeners();
@@ -357,7 +337,6 @@ class ChannelProvider with ChangeNotifier {
     _lastError = null;
     _updateTotalUnreadCount();
     _syncDirectChannelOnlineStatuses();
-    unawaited(_syncChannelReadReceipts());
     _safeNotifyListeners();
   }
 
@@ -433,24 +412,8 @@ class ChannelProvider with ChangeNotifier {
       unawaited(reload());
       return;
     }
-    if (currentStatus == ConnectionStatus.connected) {
-      unawaited(_syncChannelReadReceipts());
-    }
     _safeNotifyListeners();
   }
-
-  void _handleReadReceiptCapabilityChanged() {
-    if (_disposed) return;
-    if (engineProvider.readReceiptRepository.isEnabledFor(ChannelType.direct) ||
-        engineProvider.readReceiptRepository.isEnabledFor(ChannelType.group)) {
-      unawaited(_syncChannelReadReceipts());
-    } else {
-      engineProvider.readReceiptRepository.releaseOwner(this);
-    }
-    _safeNotifyListeners();
-  }
-
-  void _handleReadReceiptDataChanged() => _safeNotifyListeners();
 
   bool _shouldReloadAfterConnectionChange(
     ConnectionStatus previousStatus,
@@ -527,61 +490,6 @@ class ChannelProvider with ChangeNotifier {
       if (_usesSdkChannelQuery) {
         _suppressReloadBriefly();
       }
-    }
-    unawaited(_syncChannelReadReceipts());
-  }
-
-  Future<void> _syncChannelReadReceipts() async {
-    if (_disposed) return;
-    final messages = _channels
-        .where(_isChannelReadReceiptCandidate)
-        .map((channel) => channel.latestMessage!)
-        .toList(growable: false);
-    await engineProvider.readReceiptRepository.replaceOwnerMessages(
-      this,
-      messages,
-    );
-  }
-
-  bool _isChannelReadReceiptCandidate(BaseChannel channel) {
-    if ((channel.channelType != ChannelType.direct &&
-            channel.channelType != ChannelType.group) ||
-        !_isEmpty(channel.draft) ||
-        channel.editedMessageDraft != null) {
-      return false;
-    }
-    final message = channel.latestMessage;
-    if (message == null ||
-        _safeMessageValue(() => message.direction) != MessageDirection.send ||
-        _safeMessageValue(() => message.needReceipt) != true ||
-        engineProvider.isFailedMessage(message)) {
-      return false;
-    }
-    final status = _safeMessageValue(() => message.sentStatus);
-    if (status != SentStatus.sent &&
-        status != SentStatus.received &&
-        status != SentStatus.read &&
-        status != SentStatus.destroyed) {
-      return false;
-    }
-    final messageId = _safeMessageValue(() => message.messageId);
-    final messageType = _safeMessageValue(() => message.messageType);
-    return messageId?.isNotEmpty == true &&
-        messageType != null &&
-        messageType != MessageType.unknown &&
-        messageType != MessageType.command &&
-        messageType != MessageType.commandNotification &&
-        messageType != MessageType.groupNotification &&
-        messageType != MessageType.informationNotification;
-  }
-
-  bool _isEmpty(String? value) => value == null || value.trim().isEmpty;
-
-  T? _safeMessageValue<T>(T? Function() read) {
-    try {
-      return read();
-    } on NoSuchMethodError {
-      return null;
     }
   }
 
@@ -804,7 +712,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -820,7 +727,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -836,7 +742,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -852,7 +757,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -869,7 +773,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -885,7 +788,6 @@ class ChannelProvider with ChangeNotifier {
         mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
         isPinned: channel.isPinned,
         draft: channel.draft,
-        editedMessageDraft: channel.editedMessageDraft,
         latestMessage: latestMessage ?? channel.latestMessage,
         notificationLevel: channel.notificationLevel,
         firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -901,7 +803,6 @@ class ChannelProvider with ChangeNotifier {
       mentionedMeCount: mentionedMeCount ?? channel.mentionedMeCount,
       isPinned: channel.isPinned,
       draft: channel.draft,
-      editedMessageDraft: channel.editedMessageDraft,
       latestMessage: latestMessage ?? channel.latestMessage,
       notificationLevel: channel.notificationLevel,
       firstUnreadMsgSendTime: channel.firstUnreadMsgSendTime,
@@ -1043,13 +944,6 @@ class ChannelProvider with ChangeNotifier {
     engineProvider.connectionStatusNotifier.removeListener(
       _handleConnectionStatusChanged,
     );
-    engineProvider.readReceiptVersionNotifier.removeListener(
-      _handleReadReceiptCapabilityChanged,
-    );
-    engineProvider.readReceiptRepository.removeListener(
-      _handleReadReceiptDataChanged,
-    );
-    engineProvider.readReceiptRepository.releaseOwner(this);
     engineProvider.removeLocalNotificationFilter(
       _shouldSuppressLocalNotification,
     );

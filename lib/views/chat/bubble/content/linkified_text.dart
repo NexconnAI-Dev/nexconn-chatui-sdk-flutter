@@ -12,8 +12,6 @@ class _LinkifiedText extends StatefulWidget {
   final String text;
   final TextStyle style;
   final TextStyle linkStyle;
-  final String? suffix;
-  final TextStyle? suffixStyle;
   final ValueChanged<Uri> onLinkTap;
   final ValueChanged<String> onPhoneTap;
 
@@ -21,8 +19,6 @@ class _LinkifiedText extends StatefulWidget {
     required this.text,
     required this.style,
     required this.linkStyle,
-    this.suffix,
-    this.suffixStyle,
     required this.onLinkTap,
     required this.onPhoneTap,
   });
@@ -61,29 +57,12 @@ class _LinkifiedTextState extends State<_LinkifiedText> {
           .allMatches(widget.text)
           .map((match) => _TextActionMatch.phone(match)),
     ]..sort((a, b) => a.start.compareTo(b.start));
-    final suffix = widget.suffix;
-    final suffixSpan = suffix == null || suffix.isEmpty
-        ? null
-        : TextSpan(text: suffix, style: widget.suffixStyle);
     if (matches.isEmpty) {
-      return Text.rich(
-        TextSpan(
-          text: widget.text,
-          style: widget.style,
-          children: [if (suffixSpan != null) suffixSpan],
-        ),
-        semanticsLabel: '${widget.text}${suffix ?? ''}',
-      );
+      return Text(widget.text, style: widget.style);
     }
     return Text.rich(
-      TextSpan(
-        style: widget.style,
-        children: [
-          ...(_spans ??= _buildSpans(matches)),
-          if (suffixSpan != null) suffixSpan,
-        ],
-      ),
-      semanticsLabel: '${widget.text}${suffix ?? ''}',
+      TextSpan(style: widget.style, children: _spans ??= _buildSpans(matches)),
+      semanticsLabel: widget.text,
     );
   }
 

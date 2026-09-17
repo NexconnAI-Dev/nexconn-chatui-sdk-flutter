@@ -18,11 +18,9 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
       return;
     }
     final canCopy = _canCopyMessage(message);
-    final canEdit = _canEditMessage(provider, message);
     final canDeleteForAll = _canDeleteForAllMessage(provider, message);
     final isSystemChannel = _isSystemChannelMessage(message);
     if (!menu.showCopyButton &&
-        !menu.showEditButton &&
         !menu.showDeleteButton &&
         !menu.showDeleteForAllButton &&
         !menu.showReferenceButton &&
@@ -44,15 +42,6 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
           label: _trackMenuLabel(
             menuLabels,
             menu.copyText ?? context.chatUIL10n.chatLongPressCopy,
-          ),
-        ),
-      if (!isSystemChannel && menu.showEditButton && canEdit)
-        _messageMenuItem(
-          value: _ChatMessageMenuAction.edit,
-          iconName: 'NexconnLightIcon/Edit.png',
-          label: _trackMenuLabel(
-            menuLabels,
-            menu.editText ?? context.chatUIL10n.chatLongPressEdit,
           ),
         ),
       if (menu.showDeleteButton && !canDeleteForAll)
@@ -106,7 +95,7 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
     }
     final menuWidth = _resolveMessageMenuWidth(context, menuLabels);
     final menuHeight = _estimateMenuHeight(items.length);
-    final action = showMenu<_ChatMessageMenuAction>(
+    final action = await showMenu<_ChatMessageMenuAction>(
       context: context,
       position: _menuPosition(
         context,
@@ -114,7 +103,6 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
         menuWidth: menuWidth,
         menuHeight: menuHeight,
       ),
-      // 弹出消息菜单时保留输入框焦点，避免键盘被 PopupRoute 收起。
       requestFocus: false,
       menuPadding: EdgeInsets.zero,
       elevation: 8,
@@ -125,15 +113,12 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
       shadowColor: const Color(0x33000000),
       items: items,
     );
-    final selectedAction = await action;
-    if (!context.mounted || selectedAction == null) {
+    if (!context.mounted || action == null) {
       return;
     }
-    switch (selectedAction) {
+    switch (action) {
       case _ChatMessageMenuAction.copy:
         await _copyMessage(context, provider, message);
-      case _ChatMessageMenuAction.edit:
-        await _editMessage(context, provider, message);
       case _ChatMessageMenuAction.delete:
         await _deleteMessage(context, provider, message);
       case _ChatMessageMenuAction.deleteForAll:
@@ -147,43 +132,6 @@ extension _MessageListLongPressMenu on _MessageListWidgetState {
           _showSelectionLimitTip(context);
         }
     }
-  }
-
-  bool _canEditMessage(ChatProvider provider, Message message) {
-    return provider.canEditMessageFor(message);
-  }
-
-  Future<void> _editMessage(
-    BuildContext context,
-    ChatProvider provider,
-    Message message,
-  ) async {
-    final input = context.read<MessageInputProvider?>();
-    if (input == null) return;
-    final current = input.editingMessage;
-    if (current != null && current.messageId != message.messageId) {
-      final shouldSwitch =
-          await showDialog<bool>(
-            context: context,
-            builder: (dialogContext) => AlertDialog(
-              title: Text(context.chatUIL10n.messageEditSwitchTitle),
-              content: Text(context.chatUIL10n.messageEditSwitchMessage),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: Text(context.chatUIL10n.commonCancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: Text(context.chatUIL10n.commonConfirm),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-      if (!shouldSwitch || !context.mounted) return;
-    }
-    input.startEditing(message);
   }
 
   String _trackMenuLabel(List<String> labels, String label) {

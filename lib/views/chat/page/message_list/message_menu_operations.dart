@@ -32,10 +32,6 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
     Message message,
   ) async {
     final menu = widget.config.longPressMenuConfig;
-    await _stopVoicePlaybackForMessage(context, message);
-    if (!context.mounted) {
-      return;
-    }
     if (menu.onDelete != null) {
       await menu.onDelete!(context, provider.channel, message);
       return;
@@ -70,10 +66,6 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
     Message message,
   ) async {
     final menu = widget.config.longPressMenuConfig;
-    await _stopVoicePlaybackForMessage(context, message);
-    if (!context.mounted) {
-      return;
-    }
     if (menu.onDeleteForAll != null) {
       await menu.onDeleteForAll!(context, provider.channel, message);
       return;
@@ -95,21 +87,6 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
         content: Text(error.message ?? context.chatUIL10n.chatDeleteFailed),
       ),
     );
-  }
-
-  Future<void> _stopVoicePlaybackForMessage(
-    BuildContext context,
-    Message message,
-  ) async {
-    if (message is! HDVoiceMessage) {
-      return;
-    }
-    try {
-      final audioPlayer = context.read<NexconnAudioPlayerProvider>();
-      await audioPlayer.stopVoiceMessageIfPlaying(message);
-    } on ProviderNotFoundException {
-      // Audio playback is optional for host applications.
-    }
   }
 
   bool _canCopyMessage(Message message) {
@@ -145,7 +122,6 @@ extension _MessageListMessageMenuOperations on _MessageListWidgetState {
     }
     return !isDeleteForAllPlaceholderMessage(message) &&
         message is! CombineMessage &&
-        message is! GIFMessage &&
         message is! HDVoiceMessage &&
         message is! ShortVideoMessage &&
         message.messageType != MessageType.voice;

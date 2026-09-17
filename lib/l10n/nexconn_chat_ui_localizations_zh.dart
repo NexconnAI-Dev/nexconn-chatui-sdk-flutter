@@ -127,20 +127,6 @@ class NexconnChatUILocalizationsZh extends NexconnChatUILocalizations {
   String get chatReadReceiptUsersLoadFailed => '加载已读回执用户失败';
 
   @override
-  String get chatReadReceiptPending => '已读状态待获取';
-
-  @override
-  String get chatReadReceiptNotRead => '未读';
-
-  @override
-  String get chatReadReceiptFullyRead => '已读';
-
-  @override
-  String chatReadReceiptPartiallyRead(int readCount, int totalCount) {
-    return '已读 $readCount/$totalCount';
-  }
-
-  @override
   String get chatLongPressCopy => '复制';
 
   @override
@@ -157,9 +143,6 @@ class NexconnChatUILocalizationsZh extends NexconnChatUILocalizations {
 
   @override
   String get chatLongPressReference => '回复';
-
-  @override
-  String get chatLongPressEdit => '编辑';
 
   @override
   String get chatLongPressMore => '多选';
@@ -210,9 +193,6 @@ class NexconnChatUILocalizationsZh extends NexconnChatUILocalizations {
 
   @override
   String get chatForwardFailed => '转发消息失败。';
-
-  @override
-  String get chatForwardMediaDownloadFailed => '媒体下载失败，请检查网络后重试。';
 
   @override
   String chatSelectedMessages(int count) {
@@ -568,9 +548,6 @@ class NexconnChatUILocalizationsZh extends NexconnChatUILocalizations {
   String get photoImageUnavailable => '图片不可用';
 
   @override
-  String get photoImageLoadFailed => '图片加载失败';
-
-  @override
   String get photoVideoPreview => '视频预览';
 
   @override
@@ -651,48 +628,6 @@ class NexconnChatUILocalizationsZh extends NexconnChatUILocalizations {
 
   @override
   String get messageSummaryGroupNotification => '[群通知]';
-
-  @override
-  String get messageSummaryInformationNotification => '[系统通知]';
-
-  @override
-  String get messageInputEditing => '编辑消息';
-
-  @override
-  String get messageInputCancelEditing => '取消编辑';
-
-  @override
-  String get messageEditSwitchTitle => '切换编辑消息？';
-
-  @override
-  String get messageEditSwitchMessage => '当前未提交的编辑内容将被丢弃。';
-
-  @override
-  String get messageEditUnavailable => '该消息已不可编辑';
-
-  @override
-  String get messageEditFailed => '消息编辑失败';
-
-  @override
-  String get messageEdited => '已编辑';
-
-  @override
-  String get messageEditUpdating => '更新中';
-
-  @override
-  String get messageEditRetry => '更新失败，点击重试';
-
-  @override
-  String get messageEditExpandTooltip => '展开编辑';
-
-  @override
-  String get messageInputEmojiTooltip => '表情';
-
-  @override
-  String get referenceMessageDeleted => '此消息已删除';
-
-  @override
-  String get referenceMessageRecalled => '此消息已撤回';
 
   @override
   String get messageSummaryUnknown => '未知消息';

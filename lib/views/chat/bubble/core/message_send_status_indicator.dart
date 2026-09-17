@@ -1,9 +1,6 @@
 part of '../message_bubble.dart';
 
 extension _MessageBubbleSendStatusIndicator on _MessageBubbleBase {
-  /// Unified status slot rendered beside the bubble (aligned to its bottom,
-  /// before the bubble in the text direction), shared by the sending spinner,
-  /// the failed retry icon and the V5 read-receipt indicator.
   Widget? _sendStatusIndicator(BuildContext context, bool sent) {
     if (withoutStatusLine) {
       return null;
@@ -14,71 +11,35 @@ extension _MessageBubbleSendStatusIndicator on _MessageBubbleBase {
     final sentStatus = _displaySentStatus(context);
     final isFailure =
         sentStatus == SentStatus.failed || sentStatus == SentStatus.canceled;
-    final Widget child;
-    if (sentStatus == SentStatus.sending) {
-      child = KeyedSubtree(
-        key: MessageBubble.sendingStatusKey,
-        child: const _RotatingStatusAsset(
-          assetName: 'messageSending.png',
-          size: kBubbleStatusSize,
-        ),
-      );
-    } else if (isFailure) {
-      child = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => _handleResend(context),
-        child: KeyedSubtree(
-          key: MessageBubble.failedStatusKey,
-          child: ChatUIAsset.image(
-            'messageSendFail.png',
-            width: kBubbleStatusSize,
-            height: kBubbleStatusSize,
-          ),
-        ),
-      );
-    } else {
-      final receiptIndicator = _readReceiptStatusIndicator(context);
-      if (receiptIndicator == null) {
-        return null;
-      }
-      child = receiptIndicator;
+    if (sentStatus != SentStatus.sending && !isFailure) {
+      return null;
     }
+    final child = sentStatus == SentStatus.sending
+        ? KeyedSubtree(
+            key: MessageBubble.sendingStatusKey,
+            child: const _RotatingStatusAsset(
+              assetName: 'messageSending.png',
+              size: kBubbleStatusSize,
+            ),
+          )
+        : GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => _handleResend(context),
+            child: KeyedSubtree(
+              key: MessageBubble.failedStatusKey,
+              child: ChatUIAsset.image(
+                'messageSendFail.png',
+                width: kBubbleStatusSize,
+                height: kBubbleStatusSize,
+              ),
+            ),
+          );
     return Padding(
-      padding: const EdgeInsetsDirectional.only(end: kBubbleStatusPadding),
+      padding: const EdgeInsets.only(
+        right: kBubbleStatusPadding,
+        top: kBubbleStatusPadding,
+      ),
       child: child,
-    );
-  }
-
-  Widget? _readReceiptStatusIndicator(BuildContext context) {
-    if (!config.messageListConfig.showReadReceiptIndicator) {
-      return null;
-    }
-    final provider = _maybeChatProvider(context);
-    if (provider?.canShowReadReceipt(message) != true) {
-      return null;
-    }
-    final receiptData =
-        provider!.readReceiptDataFor(message) ??
-        const ChatReadReceiptDisplayData();
-    final channelType =
-        channel?.channelType ??
-        _safeMessageChannelType(message) ??
-        provider.channel.channelType;
-    final canOpenReadReceiptUsers =
-        channelType == ChannelType.group &&
-        config.messageListConfig.showReadReceiptUserList &&
-        receiptData.isAuthoritative;
-    final customTap = config.messageListConfig.onReadReceiptStatusTap;
-    final canUseCustomTap = customTap != null && receiptData.isAuthoritative;
-    return ChatReadReceiptIndicator(
-      displayData: receiptData,
-      channelType: channelType,
-      size: config.messageListConfig.readReceiptIndicatorSize,
-      readColor: config.messageListConfig.readReceiptReadColor,
-      unreadColor: config.messageListConfig.readReceiptUnreadColor,
-      onTap: canUseCustomTap || canOpenReadReceiptUsers
-          ? () => _handleReadReceiptStatusTap(context, provider, customTap)
-          : null,
     );
   }
 
@@ -111,13 +72,11 @@ extension _MessageBubbleSendStatusIndicator on _MessageBubbleBase {
       onTap?.call();
       return;
     }
-    await ReadReceiptUsersPage.push(
+    await ReadReceiptUsersSheet.show(
       context,
       provider: provider,
       message: message,
       config: config.messageListConfig,
-      profileProvider: config.profileProvider,
-      memberBuilder: config.readReceiptMemberBuilder,
     );
   }
 

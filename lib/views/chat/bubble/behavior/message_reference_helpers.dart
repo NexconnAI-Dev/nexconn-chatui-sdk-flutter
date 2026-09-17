@@ -44,21 +44,8 @@ extension _MessageBubbleReferenceHelpers on _MessageBubbleBase {
       referenceMsg,
       profile: profile,
     );
-    final referenceEdited =
-        message is ReferenceMessage &&
-        _safeReferenceStatus(message as ReferenceMessage) ==
-            ReferenceMessageStatus.modified;
-    final editedSuffix = referenceEdited
-        ? '（${context.chatUIL10n.messageEdited}）'
-        : '';
-    final title = referenceSenderName.isEmpty
-        ? referenceContent
-        : context.chatUIL10n.messageInputReplyTo(
-            referenceSenderName,
-            referenceContent,
-          );
     return Text(
-      '| $title$editedSuffix',
+      '| ${context.chatUIL10n.messageInputReplyTo(referenceSenderName, referenceContent)}',
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
@@ -66,15 +53,6 @@ extension _MessageBubbleReferenceHelpers on _MessageBubbleBase {
         fontSize: kBubbleRefTextFontSize,
       ),
     );
-  }
-
-  ReferenceMessageStatus _safeReferenceStatus(ReferenceMessage message) {
-    try {
-      return message.referenceMessageStatus ??
-          ReferenceMessageStatus.defaultValue;
-    } on NoSuchMethodError {
-      return ReferenceMessageStatus.defaultValue;
-    }
   }
 
   BaseChannel _referenceProfileChannel(Message message) {

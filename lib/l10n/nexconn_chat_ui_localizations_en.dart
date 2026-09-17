@@ -130,20 +130,6 @@ class NexconnChatUILocalizationsEn extends NexconnChatUILocalizations {
       'Failed to load read receipt users';
 
   @override
-  String get chatReadReceiptPending => 'Read status pending';
-
-  @override
-  String get chatReadReceiptNotRead => 'Unread';
-
-  @override
-  String get chatReadReceiptFullyRead => 'Read';
-
-  @override
-  String chatReadReceiptPartiallyRead(int readCount, int totalCount) {
-    return 'Read $readCount of $totalCount';
-  }
-
-  @override
   String get chatLongPressCopy => 'Copy';
 
   @override
@@ -160,9 +146,6 @@ class NexconnChatUILocalizationsEn extends NexconnChatUILocalizations {
 
   @override
   String get chatLongPressReference => 'Reply';
-
-  @override
-  String get chatLongPressEdit => 'Edit';
 
   @override
   String get chatLongPressMore => 'Multi-select';
@@ -215,10 +198,6 @@ class NexconnChatUILocalizationsEn extends NexconnChatUILocalizations {
 
   @override
   String get chatForwardFailed => 'Failed to forward messages.';
-
-  @override
-  String get chatForwardMediaDownloadFailed =>
-      'Media download failed. Check your network and try again.';
 
   @override
   String chatSelectedMessages(int count) {
@@ -586,9 +565,6 @@ class NexconnChatUILocalizationsEn extends NexconnChatUILocalizations {
   String get photoImageUnavailable => 'Image unavailable';
 
   @override
-  String get photoImageLoadFailed => 'Image failed to load';
-
-  @override
   String get photoVideoPreview => 'Video Preview';
 
   @override
@@ -670,48 +646,6 @@ class NexconnChatUILocalizationsEn extends NexconnChatUILocalizations {
 
   @override
   String get messageSummaryGroupNotification => '[Group Notification]';
-
-  @override
-  String get messageSummaryInformationNotification => '[Information]';
-
-  @override
-  String get messageInputEditing => 'Editing message';
-
-  @override
-  String get messageInputCancelEditing => 'Cancel editing';
-
-  @override
-  String get messageEditSwitchTitle => 'Switch message?';
-
-  @override
-  String get messageEditSwitchMessage => 'Your current edit will be discarded.';
-
-  @override
-  String get messageEditUnavailable => 'This message can no longer be edited';
-
-  @override
-  String get messageEditFailed => 'Failed to edit message';
-
-  @override
-  String get messageEdited => 'Edited';
-
-  @override
-  String get messageEditUpdating => 'Updating';
-
-  @override
-  String get messageEditRetry => 'Update failed. Tap to retry';
-
-  @override
-  String get messageEditExpandTooltip => 'Expand editor';
-
-  @override
-  String get messageInputEmojiTooltip => 'Emoji';
-
-  @override
-  String get referenceMessageDeleted => 'This message was deleted';
-
-  @override
-  String get referenceMessageRecalled => 'This message was recalled';
 
   @override
   String get messageSummaryUnknown => 'Unknown Message';

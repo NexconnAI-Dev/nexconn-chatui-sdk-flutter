@@ -27,15 +27,6 @@ class MessageInputProvider with ChangeNotifier {
   MessageInputMode _mode = MessageInputMode.initial;
   String _draft = '';
   Message? _referenceMessage;
-  Message? _editingMessage;
-  String? _draftBeforeEditing;
-  Message? _referenceBeforeEditing;
-  MessageInputMode? _modeBeforeEditing;
-  bool _editExpanded = false;
-  List<MessageInputMention>? _mentionsBeforeEditing;
-  List<String> _editingFallbackMentionUserIds = const <String>[];
-  String? _editingFallbackMentionDraft;
-  int _editingRevision = 0;
   List<MessageInputMention> _mentions = const <MessageInputMention>[];
   List<List<String>> _emojiPages = const <List<String>>[];
   int _currentEmojiPage = 0;
@@ -52,35 +43,6 @@ class MessageInputProvider with ChangeNotifier {
 
   /// Message currently referenced by the input.
   Message? get referenceMessage => _referenceMessage;
-
-  /// Message currently being edited, if any.
-  Message? get editingMessage => _editingMessage;
-
-  bool get isEditing => _editingMessage != null;
-
-  /// Whether the active edit session is shown in the full-screen editor.
-  bool get editExpanded => _editExpanded;
-
-  /// Switches the active edit session between the inline bar and the
-  /// full-screen editor overlay.
-  void setEditExpanded(bool expanded) {
-    if (!_isEditingAvailableForExpansion && expanded) {
-      return;
-    }
-    if (_editExpanded == expanded) {
-      return;
-    }
-    _editExpanded = expanded;
-    notifyListeners();
-  }
-
-  bool get _isEditingAvailableForExpansion => _editingMessage != null;
-
-  /// Increments whenever the active edit session changes.
-  int get editingRevision => _editingRevision;
-
-  /// Normal text draft captured before entering the current edit session.
-  String? get draftBeforeEditing => _draftBeforeEditing;
 
   /// Mentions retained in the current draft.
   List<MessageInputMention> get mentions => List.unmodifiable(_mentions);
@@ -104,17 +66,8 @@ class MessageInputProvider with ChangeNotifier {
       _voiceRecordingState == MessageInputVoiceRecordingState.canceling;
 
   /// User ids extracted from retained mentions.
-  List<String> get mentionUserIds {
-    final explicit = _mentions
-        .map((mention) => mention.userId)
-        .toList(growable: false);
-    if (explicit.isNotEmpty ||
-        !isEditing ||
-        _draft != _editingFallbackMentionDraft) {
-      return explicit;
-    }
-    return List<String>.unmodifiable(_editingFallbackMentionUserIds);
-  }
+  List<String> get mentionUserIds =>
+      _mentions.map((mention) => mention.userId).toList(growable: false);
 
   /// Whether the draft contains non-whitespace text.
   bool get hasDraft => _draft.trim().isNotEmpty;
@@ -212,77 +165,12 @@ class MessageInputProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Restores a referenced-message draft before listeners are attached.
-  void setReferenceMessageSilently(Message? message) {
-    _referenceMessage = message;
-  }
-
   /// Clears the active reference message.
   void clearReferenceMessage() {
     if (_referenceMessage == null) {
       return;
     }
     _referenceMessage = null;
-    notifyListeners();
-  }
-
-  /// Enters edit mode while preserving the complete normal composer state.
-  void startEditing(
-    Message message, {
-    String? content,
-    List<String>? mentionUserIds,
-  }) {
-    if (identical(_editingMessage, message) && content == null) return;
-    if (_editingMessage == null) {
-      _draftBeforeEditing = _draft;
-      _referenceBeforeEditing = _referenceMessage;
-      _modeBeforeEditing = _mode;
-      _mentionsBeforeEditing = List<MessageInputMention>.of(_mentions);
-    }
-    final editingContent = content ?? _messageContent(message);
-    _editingMessage = message;
-    _editExpanded = false;
-    _referenceMessage = null;
-    _mode = MessageInputMode.text;
-    _draft = editingContent;
-    final editingMentionUserIds =
-        mentionUserIds ?? _messageMentionUserIds(message);
-    _mentions = _editingMentionsFromContent(
-      editingContent,
-      editingMentionUserIds,
-    );
-    _editingFallbackMentionUserIds = List<String>.unmodifiable(
-      editingMentionUserIds,
-    );
-    _editingFallbackMentionDraft = editingContent;
-    _editingRevision++;
-    notifyListeners();
-  }
-
-  void clearEditing({bool restoreDraft = true}) {
-    if (_editingMessage == null) return;
-    _editingMessage = null;
-    _editExpanded = false;
-    if (restoreDraft) {
-      _draft = _draftBeforeEditing ?? '';
-      _referenceMessage = _referenceBeforeEditing;
-      _mode = _modeBeforeEditing ?? MessageInputMode.text;
-      _mentions = List<MessageInputMention>.of(
-        _mentionsBeforeEditing ?? const <MessageInputMention>[],
-      );
-    } else {
-      _draft = '';
-      _referenceMessage = null;
-      _mode = MessageInputMode.text;
-      _mentions = const <MessageInputMention>[];
-    }
-    _draftBeforeEditing = null;
-    _referenceBeforeEditing = null;
-    _modeBeforeEditing = null;
-    _mentionsBeforeEditing = null;
-    _editingFallbackMentionUserIds = const <String>[];
-    _editingFallbackMentionDraft = null;
-    _editingRevision++;
     notifyListeners();
   }
 
@@ -340,14 +228,12 @@ class MessageInputProvider with ChangeNotifier {
     final didChangeDraft = _draft != draft;
     final didChangeMode = _mode != mode;
     final didChangeReference = _referenceMessage != null;
-    final didChangeEditing = _editingMessage != null;
     final didChangeMentions = _mentions.isNotEmpty;
     final didChangeVoiceState =
         _voiceRecordingState != MessageInputVoiceRecordingState.idle;
     if (!didChangeDraft &&
         !didChangeMode &&
         !didChangeReference &&
-        !didChangeEditing &&
         !didChangeMentions &&
         !didChangeVoiceState) {
       return false;
@@ -355,56 +241,9 @@ class MessageInputProvider with ChangeNotifier {
     _mode = mode;
     _draft = draft;
     _referenceMessage = null;
-    _editingMessage = null;
-    _editExpanded = false;
-    _draftBeforeEditing = null;
-    _referenceBeforeEditing = null;
-    _modeBeforeEditing = null;
-    _mentionsBeforeEditing = null;
-    _editingFallbackMentionUserIds = const <String>[];
-    _editingFallbackMentionDraft = null;
-    _editingRevision++;
     _mentions = _normalizeMentions(draft);
     _voiceRecordingState = MessageInputVoiceRecordingState.idle;
     return true;
-  }
-
-  String _messageContent(Message message) {
-    if (message is TextMessage) return message.text ?? '';
-    if (message is ReferenceMessage) return message.text ?? '';
-    return '';
-  }
-
-  List<String> _messageMentionUserIds(Message message) {
-    try {
-      final mentionedInfo = message.mentionedInfo;
-      if (mentionedInfo?.type == MentionedType.all) {
-        return const <String>['All'];
-      }
-      return List<String>.of(mentionedInfo?.userIdList ?? const <String>[]);
-    } on NoSuchMethodError {
-      return const <String>[];
-    }
-  }
-
-  List<MessageInputMention> _editingMentionsFromContent(
-    String content,
-    List<String> userIds,
-  ) {
-    if (content.isEmpty || userIds.isEmpty) {
-      return const <MessageInputMention>[];
-    }
-    final matches = RegExp(r'@[^\s]+ ').allMatches(content).toList();
-    if (matches.length != userIds.length) {
-      return const <MessageInputMention>[];
-    }
-    return List<MessageInputMention>.generate(matches.length, (index) {
-      final token = matches[index].group(0)!;
-      return MessageInputMention(
-        userId: userIds[index],
-        displayName: token.substring(1, token.length - 1),
-      );
-    }, growable: false);
   }
 
   List<MessageInputMention> _normalizeMentions(String draft) {

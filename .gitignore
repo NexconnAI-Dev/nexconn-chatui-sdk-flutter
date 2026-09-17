@@ -1,8 +1,0 @@
-.dart_tool/
-build/
-pubspec.lock
-pubspec_overrides.yaml
-.flutter-plugins-dependencies
-**/android/local.properties
-**/ios/Flutter/Generated.xcconfig
-**/ios/Flutter/flutter_export_environment.sh

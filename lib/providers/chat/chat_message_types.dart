@@ -37,11 +37,6 @@ class ChatForwardResult {
   bool get hasForwarded => forwardedCount > 0;
 }
 
-/// Raised when forwarding requires a remote media download that cannot finish.
-class ChatForwardMediaDownloadException implements Exception {
-  const ChatForwardMediaDownloadException();
-}
-
 class _CombinedForwardItem {
   final CombineMessageInfo info;
   final String senderName;

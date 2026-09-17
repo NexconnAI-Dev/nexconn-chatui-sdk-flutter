@@ -6,12 +6,11 @@ extension _MessageBubbleVideoMediaBubble on _MessageBubbleBase {
     ShortVideoMessage video,
     MessageStyleConfig style,
   ) {
-    final previewSize = _videoPreviewSize(video);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: SizedBox(
-        width: previewSize.width,
-        height: previewSize.height,
+        width: MessageBubble._mediaPreviewSize,
+        height: MessageBubble._mediaPreviewSize,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -43,33 +42,6 @@ extension _MessageBubbleVideoMediaBubble on _MessageBubbleBase {
     );
   }
 
-  Size _videoPreviewSize(ShortVideoMessage video) {
-    var natural = ChatUIImageUtil.getCachedBase64NaturalSize(
-      _readNullableString(() => video.thumbnailBase64String),
-    );
-    if (natural == null) {
-      final localPath = _readNullableString(() => video.localPath);
-      if (localPath != null &&
-          localPath.isNotEmpty &&
-          !_isNetworkVideoPath(localPath)) {
-        natural = ChatUIImageUtil.getFileNaturalSize(localPath);
-      }
-    }
-    final ratio = natural != null && natural.width > 0 && natural.height > 0
-        ? natural.width / natural.height
-        : 1.0;
-    // Align iOS Nexconn ChatUI's NCSightMessageCell: preserve the thumbnail
-    // ratio and cap the long side at 160 logical pixels.
-    const maxLongSide = 160.0;
-    var width = maxLongSide;
-    var height = width / ratio;
-    if (height > maxLongSide) {
-      height = maxLongSide;
-      width = height * ratio;
-    }
-    return Size(width, height);
-  }
-
   Widget _videoThumbnail(
     BuildContext context,
     ShortVideoMessage video,
@@ -78,7 +50,13 @@ extension _MessageBubbleVideoMediaBubble on _MessageBubbleBase {
     final thumbnailBytes = ChatUIImageUtil.getDecodedBase64(
       _readNullableString(() => video.thumbnailBase64String),
     );
-    final cacheSize = _previewCacheSize(context, _videoPreviewSize(video));
+    final cacheSize = _previewCacheSize(
+      context,
+      const Size(
+        MessageBubble._mediaPreviewSize,
+        MessageBubble._mediaPreviewSize,
+      ),
+    );
     if (thumbnailBytes != null) {
       return Image(
         image: ResizeImage.resizeIfNeeded(

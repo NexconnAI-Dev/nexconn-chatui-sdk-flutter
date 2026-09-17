@@ -24,21 +24,13 @@ extension _MessageListReferenceActions on _MessageListWidgetState {
     final mediaQuery = MediaQuery.of(context);
     final screenSize = overlay.size;
     final safeTop = mediaQuery.padding.top;
-    // 键盘高度参与菜单下边界计算，键盘弹起时菜单不会被压在键盘之下。
-    final bottomOcclusion = math.max(
-      mediaQuery.padding.bottom,
-      MediaQuery.viewInsetsOf(context).bottom,
-    );
+    final safeBottom = mediaQuery.padding.bottom;
     final resolvedMenuWidth = menuWidth ?? 160;
     final resolvedMenuHeight = menuHeight ?? 220;
     final headerMinTop = safeTop + appbarHeight + 50;
     final inputFieldTop =
         _messageListBottomInOverlay(overlay) ??
-        _estimatedInputTop(
-          context,
-          screenSize.height,
-          mediaQuery.padding.bottom,
-        );
+        _estimatedInputTop(context, screenSize.height, safeBottom);
 
     var left = globalPosition.dx;
     var top = globalPosition.dy;
@@ -60,7 +52,7 @@ extension _MessageListReferenceActions on _MessageListWidgetState {
       top = headerMinTop;
     }
 
-    final maxTop = screenSize.height - resolvedMenuHeight - bottomOcclusion - 8;
+    final maxTop = screenSize.height - resolvedMenuHeight - safeBottom - 8;
     if (top > maxTop) {
       top = maxTop;
     }

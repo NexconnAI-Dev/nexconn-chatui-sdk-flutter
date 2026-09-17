@@ -49,7 +49,7 @@ extension _MessageInputEmojiPanelControls on _MessageInputWidgetState {
     MessageInputEmojiPanelConfig config,
   ) {
     final chat = context.read<ChatProvider>();
-    final isEnabled = _canSubmitText(input, chat);
+    final isEnabled = input.hasDraft;
     final onTap = isEnabled ? () => _sendText(context, input, chat) : () {};
     final builder = config.sendButtonBuilder;
     if (builder != null) {

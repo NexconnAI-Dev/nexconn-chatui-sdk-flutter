@@ -963,31 +963,12 @@ class _CombineEntryRow extends StatelessWidget {
     final media = _imageMessage();
     final provider = _maybeChatProvider(context);
     final path = media?.localPath ?? media?.remotePath;
-    final thumbnailBase64 =
-        _stringValue('thumbnailBase64String') ??
-        _stringValue('thumbnailBase64') ??
-        _stringValue('thumb') ??
-        _stringValue('thumbnail') ??
-        _stringValue('content');
-    final thumbnail = _decodeBase64(thumbnailBase64);
-    final contentWidth = _intValue('thumWidth') ?? _intValue('width');
-    final contentHeight = _intValue('thumHeight') ?? _intValue('height');
-    final naturalSize =
-        (contentWidth != null &&
-            contentWidth > 0 &&
-            contentHeight != null &&
-            contentHeight > 0)
-        ? Size(contentWidth.toDouble(), contentHeight.toDouble())
-        : ChatUIImageUtil.getBase64NaturalSize(thumbnailBase64) ??
-              ChatUIImageUtil.getFileNaturalSize(path);
-    final displaySize = naturalSize == null
-        ? const Size(160, 120)
-        : ChatUIImageUtil.referenceThumbnailDisplaySize(
-            naturalSize.width,
-            naturalSize.height,
-            maxLength: 160,
-            minLength: 60,
-          );
+    final thumbnail =
+        _decodeBase64(_stringValue('thumbnailBase64String')) ??
+        _decodeBase64(_stringValue('thumbnailBase64')) ??
+        _decodeBase64(_stringValue('thumb')) ??
+        _decodeBase64(_stringValue('thumbnail')) ??
+        _decodeBase64(_stringValue('content'));
     Widget child;
     if (thumbnail != null) {
       child = Image.memory(thumbnail, fit: BoxFit.cover);
@@ -1015,11 +996,7 @@ class _CombineEntryRow extends StatelessWidget {
             ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(6),
-        child: SizedBox(
-          width: displaySize.width,
-          height: displaySize.height,
-          child: child,
-        ),
+        child: SizedBox(width: 160, height: 120, child: child),
       ),
     );
   }
@@ -1263,9 +1240,6 @@ class _CombineEntryRow extends StatelessWidget {
       _CombineNestedMessage(entry, sourceChannelTypeValue: sourceChannelType);
 
   void _openNestedCombine(BuildContext context, CombineMessage nested) {
-    // Release the chat composer focus before pushing a nested detail page so
-    // the keyboard does not follow the route transition.
-    FocusManager.instance.primaryFocus?.unfocus();
     final provider = _maybeChatProvider(context);
     if (provider == null) {
       Navigator.of(context).push<void>(

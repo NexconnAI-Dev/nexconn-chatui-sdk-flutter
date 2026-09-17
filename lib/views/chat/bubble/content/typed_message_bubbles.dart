@@ -25,7 +25,6 @@ class _TextMessageBubble extends _TypedMessageBubble {
 
   @override
   Widget buildMessageContent(BuildContext context, MessageStyleConfig style) {
-    final edited = _isSuccessfullyEditedMessage(message);
     return _LinkifiedText(
       text: (message as TextMessage).text ?? '',
       style:
@@ -36,8 +35,6 @@ class _TextMessageBubble extends _TypedMessageBubble {
             decoration: TextDecoration.underline,
             decorationColor: style.textColor,
           ),
-      suffix: edited ? '（${context.chatUIL10n.messageEdited}）' : null,
-      suffixStyle: _editedMarkerStyle(message),
       onLinkTap: (uri) => _handleLinkTap(context, uri),
       onPhoneTap: (phoneNumber) => _handlePhoneTap(context, phoneNumber),
     );
@@ -51,25 +48,16 @@ class _ReferenceMessageBubble extends _TypedMessageBubble {
   Widget buildMessageContent(BuildContext context, MessageStyleConfig style) {
     final reference = message as ReferenceMessage;
     final referenceMsg = reference.referenceMsg;
-    final referenceStatus = _safeReferenceStatus(reference);
-    final unavailableFromProvider =
+    final referenceUnavailable =
         Provider.of<ChatProvider?>(
           context,
         )?.isReferenceMessageUnavailable(referenceMsg) ??
         false;
-    final referenceDeleted =
-        referenceStatus == ReferenceMessageStatus.deleted ||
-        (unavailableFromProvider &&
-            referenceStatus != ReferenceMessageStatus.recalled);
-    final referenceRecalled =
-        referenceStatus == ReferenceMessageStatus.recalled;
-    final referenceUnavailable = referenceDeleted || referenceRecalled;
     final sent = message.direction == MessageDirection.send;
     final referenceContent = referenceMessageContent(
       referenceMsg,
       localizations: context.chatUIL10n,
-      isDeleted: referenceDeleted,
-      isRecalled: referenceRecalled,
+      isDeleted: referenceUnavailable,
     );
     final showReferenceImage =
         !referenceUnavailable && referenceMsg is ImageMessage;
@@ -102,36 +90,41 @@ class _ReferenceMessageBubble extends _TypedMessageBubble {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (referenceUnavailable)
-          Container(
-            margin: const EdgeInsets.only(
-              bottom: kBubbleRefTextPadding,
-              right: kBubbleRefTextPadding,
-            ),
-            child: referenceTitle,
-          )
-        else if (referenceMsg != null)
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () =>
-                ReferenceMessageTapNotification(referenceMsg).dispatch(context),
-            child: Container(
-              margin: const EdgeInsets.only(
-                bottom: kBubbleRefTextPadding,
-                right: kBubbleRefTextPadding,
-              ),
-              child: showReferenceImage
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        referenceTitle,
-                        const SizedBox(height: 6),
-                        _referencedImagePreview(context, referenceMsg, style),
-                      ],
-                    )
-                  : referenceTitle,
-            ),
-          ),
+        if (referenceMsg != null)
+          referenceUnavailable
+              ? Container(
+                  margin: const EdgeInsets.only(
+                    bottom: kBubbleRefTextPadding,
+                    right: kBubbleRefTextPadding,
+                  ),
+                  child: referenceTitle,
+                )
+              : GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => ReferenceMessageTapNotification(
+                    referenceMsg,
+                  ).dispatch(context),
+                  child: Container(
+                    margin: const EdgeInsets.only(
+                      bottom: kBubbleRefTextPadding,
+                      right: kBubbleRefTextPadding,
+                    ),
+                    child: showReferenceImage
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              referenceTitle,
+                              const SizedBox(height: 6),
+                              _referencedImagePreview(
+                                context,
+                                referenceMsg,
+                                style,
+                              ),
+                            ],
+                          )
+                        : referenceTitle,
+                  ),
+                ),
         _LinkifiedText(
           text: reference.text ?? '',
           style: style.textStyle ?? TextStyle(color: style.textColor),
@@ -140,10 +133,6 @@ class _ReferenceMessageBubble extends _TypedMessageBubble {
                 decoration: TextDecoration.underline,
                 decorationColor: style.textColor,
               ),
-          suffix: _isSuccessfullyEditedMessage(message)
-              ? '（${context.chatUIL10n.messageEdited}）'
-              : null,
-          suffixStyle: _editedMarkerStyle(message),
           onLinkTap: (uri) => _handleLinkTap(context, uri),
           onPhoneTap: (phoneNumber) => _handlePhoneTap(context, phoneNumber),
         ),
@@ -255,36 +244,6 @@ class _GroupNotificationMessageBubble extends _TypedMessageBubble {
   @override
   Widget buildMessageContent(BuildContext context, MessageStyleConfig style) {
     return _groupNotificationTip(context);
-  }
-}
-
-class _InformationNotificationMessageBubble extends _TypedMessageBubble {
-  _InformationNotificationMessageBubble(super.args);
-
-  @override
-  bool get withoutBubble => true;
-
-  @override
-  bool get withoutStatusLine => true;
-
-  @override
-  double get extraOuterVerticalPadding => kBubblePaddingVertical;
-
-  @override
-  Widget buildMessageContent(BuildContext context, MessageStyleConfig style) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Center(
-        child: Text(
-          (message as InformationNotificationMessage).message ??
-              context.chatUIL10n.messageSummaryInformationNotification,
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: const Color(0xFF8C919C)),
-        ),
-      ),
-    );
   }
 }
 

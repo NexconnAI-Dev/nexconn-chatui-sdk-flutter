@@ -136,10 +136,6 @@ class _ForwardSelectPageState extends State<ForwardSelectPage> {
     if (mode == null || !mounted) {
       return;
     }
-    final confirmed = await _confirmForward(channel, mode);
-    if (!confirmed || !mounted) {
-      return;
-    }
     setState(() => _isForwarding = true);
     try {
       final shouldClose = await widget.onChannelSelected(channel, mode);
@@ -157,39 +153,6 @@ class _ForwardSelectPageState extends State<ForwardSelectPage> {
         setState(() => _isForwarding = false);
       }
     }
-  }
-
-  Future<bool> _confirmForward(
-    BaseChannel channel,
-    ChatForwardMode mode,
-  ) async {
-    final modeLabel = mode == ChatForwardMode.combined
-        ? context.chatUIL10n.forwardAsCombined
-        : context.chatUIL10n.forwardIndividually;
-    return await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text(context.chatUIL10n.forwardConfirmTitle),
-            content: Text(
-              context.chatUIL10n.forwardConfirmMessage(
-                widget.messages.length,
-                _channelTitle(channel),
-                modeLabel,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(context.chatUIL10n.commonCancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: Text(context.chatUIL10n.commonConfirm),
-              ),
-            ],
-          ),
-        ) ??
-        false;
   }
 
   Future<ChatForwardMode?> _resolveForwardMode(BuildContext context) async {

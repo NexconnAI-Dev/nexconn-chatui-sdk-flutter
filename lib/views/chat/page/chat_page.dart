@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ai_nexconn_chat_plugin/ai_nexconn_chat_plugin.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show ScrollDirection;
 import 'package:provider/provider.dart';
 
 import '../../../providers/audio_player_provider.dart';
@@ -158,9 +157,9 @@ class _ChatPageState extends State<ChatPage> {
               Column(
                 children: [
                   Expanded(
-                    child: NotificationListener<UserScrollNotification>(
+                    child: NotificationListener<ScrollStartNotification>(
                       onNotification: (notification) {
-                        if (notification.direction != ScrollDirection.idle) {
+                        if (notification.dragDetails != null) {
                           _collapseInputIfNeeded();
                         }
                         return false;
@@ -198,6 +197,18 @@ class _ChatPageState extends State<ChatPage> {
                             initialUnreadMentionCount:
                                 widget.channel.mentionedMeCount ?? 0,
                           ),
+                          Consumer<MessageInputProvider>(
+                            builder: (context, input, _) =>
+                                _isInputPanelOpen(input)
+                                ? Positioned.fill(
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: _collapseInputIfNeeded,
+                                      child: const SizedBox.expand(),
+                                    ),
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
                         ],
                       ),
                     ),
@@ -231,6 +242,11 @@ class _ChatPageState extends State<ChatPage> {
       return;
     }
     _messageInputProvider.setMode(MessageInputMode.initial);
+  }
+
+  bool _isInputPanelOpen(MessageInputProvider input) {
+    return input.mode == MessageInputMode.emoji ||
+        input.mode == MessageInputMode.extension;
   }
 
   Color _defaultMessageListBackgroundColor(NexconnThemeTokens theme) {
@@ -277,25 +293,14 @@ class _ChatPageState extends State<ChatPage> {
     if (_isSyncingReference) {
       return;
     }
-    var clearedInvalidEdit = false;
     _isSyncingReference = true;
     try {
       final referenceMessage = _provider.referenceMessage;
       if (referenceMessage != _messageInputProvider.referenceMessage) {
         _messageInputProvider.setReferenceMessage(referenceMessage);
       }
-      final editingMessage = _messageInputProvider.editingMessage;
-      if (editingMessage != null &&
-          !_provider.isMessageStillEditable(editingMessage)) {
-        _messageInputProvider.clearEditing();
-        clearedInvalidEdit = true;
-      }
     } finally {
       _isSyncingReference = false;
-    }
-    if (clearedInvalidEdit) {
-      _syncReferenceToChatProvider();
-      unawaited(_provider.clearEditedMessageDraft());
     }
   }
 
